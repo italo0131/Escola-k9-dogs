@@ -91,6 +91,11 @@ model User {
   notifications     Notification[]
   bookings          Booking[]         // reservas feitas como cliente
   servicesOffered   Service[]         // serviços oferecidos (se autônomo)
+  trainerProfiles   TrainerProfile[]
+  trainingPlans     TrainingPlan[]
+  trainingSessions  TrainingSession[]
+  blogPosts         BlogPost[]
+  courses           Course[]
   transactionsSent  Transaction[]     @relation("Payer")   // pagamentos feitos
   transactionsReceived Transaction[]  @relation("Payee")   // pagamentos recebidos
 
@@ -117,8 +122,10 @@ model Company {
   verified    Boolean  @default(false) // selo de verificação
 
   // Relação com o dono da empresa (User)
-  ownerId     String
+  ownerId     String   @unique
   owner       User     @relation("CompanyOwner", fields: [ownerId], references: [id])
+
+  ownedCompanies Company[] @relation("CompanyOwner")
 
   // Lista de usuários que pertencem à empresa (funcionários, etc.)
   users       User[]   @relation("CompanyUsers")
@@ -251,7 +258,7 @@ model TrainingPlan {
   companyId   String?
   company     Company? @relation(fields: [companyId], references: [id])
   trainerId   String?  // se for trainer autônomo
-  trainer     User?    @relation(fields: [trainerId], references: [id])
+  trainer     User?    @relation("TrainingPlans", fields: [trainerId], references: [id])
 
   sessionsList TrainingSession[]
 
@@ -272,10 +279,10 @@ model TrainingSession {
   trainerId   String
   companyId   String?
   planId      String?  // se fizer parte de um pacote
-  bookingId   String?  // se originada de uma reserva
+  bookingId   String?      @unique  // se originada de uma reserva
 
   dog         Dog          @relation(fields: [dogId], references: [id])
-  trainer     User         @relation(fields: [trainerId], references: [id])
+  trainer     User         @relation("TrainingSessions", fields: [trainerId], references: [id])
   company     Company?     @relation(fields: [companyId], references: [id])
   plan        TrainingPlan? @relation(fields: [planId], references: [id])
   booking     Booking?     @relation(fields: [bookingId], references: [id])
@@ -300,7 +307,7 @@ model Service {
   companyId   String?
   company     Company? @relation(fields: [companyId], references: [id])
   trainerId   String?  // se for autônomo (sem company)
-  trainer     User?    @relation(fields: [trainerId], references: [id])
+  trainer     User?    @relation("Services", fields: [trainerId], references: [id])
 
   bookings    Booking[]
 
@@ -401,10 +408,12 @@ model BlogPost {
   image     String?
 
   authorId  String
-  author    User     @relation(fields: [authorId], references: [id])
+  author    User     @relation("BlogPosts", fields: [authorId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  blogPosts BlogPost[]
 }
 
 model Course {
@@ -415,7 +424,7 @@ model Course {
   price       Float?   // se for pago
   thumbnail   String?
   trainerId   String?  // instrutor responsável
-  trainer     User?    @relation(fields: [trainerId], references: [id])
+  trainer     User?    @relation("Courses", fields: [trainerId], references: [id])
 
   modules     CourseModule[]
   transactions Transaction[] // compras do curso
@@ -446,7 +455,7 @@ model Video {
   isPremium   Boolean  @default(false)
   price       Float?   // se for avulso e pago
   courseId    String?
-  course      String?  @relation(fields: [courseId], references: [id])
+  course      Course?  @relation(fields: [courseId], references: [id])
   category    String?
 
   createdAt DateTime @default(now())

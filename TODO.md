@@ -1,1 +1,1 @@
-# TODO: Segurança SaaS + Auth Real + Admin Approval\n\n## ✅ 0-6. Backend/UI approve flow [DONE]\n\n## ⏳ 7. Rate limit + clean console.logs\n\n## ☐ 8. Test + complete
+# TODO List for Making Project Run\n\n- [x] Create TODO.md\n- [ ] 1. Fix Prisma schema.prisma (Video course relation)\n- [ ] 2. Fix postcss.config.mjs\n- [ ] 3. Run `npx prisma generate`\n- [ ] 4. Kill stuck dev processes if needed\n- [ ] 5. Run `npm run dev`\n- [ ] 6. Verify app runs at localhost:3000\n- [ ] 7. Setup DB if needed (PostgreSQL + DATABASE_URL)
