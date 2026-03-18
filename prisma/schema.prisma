@@ -1,402 +1,89 @@
 generator client {
   provider = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-
-// ====================================================
-// ENUMS
-// ====================================================
-
 enum Role {
-  SUPER_ADMIN
-  COMPANY_ADMIN
+  ROOT
+  SUPERADMIN
+  ADMIN
   TRAINER
   CLIENT
 }
 
 enum UserStatus {
-  PENDING
-  VERIFIED
   ACTIVE
   SUSPENDED
 }
 
-enum Gender {
-  MALE
-  FEMALE
-}
-
-enum SessionStatus {
-  SCHEDULED
-  COMPLETED
-  CANCELLED
-  MISSED
-}
-
-enum ServiceType {
-  IN_PERSON
-  ONLINE
-}
-
-enum BookingStatus {
-  PENDING
-  CONFIRMED
-  CANCELLED
-  COMPLETED
-}
-
-enum TransactionStatus {
-  PENDING
-  PAID
-  REFUNDED
-  FAILED
-}
-
-enum SubscriptionStatus {
-  ACTIVE
-  CANCELED
-  PAST_DUE
-  EXPIRED
-}
-
-// ====================================================
-// USERS & COMPANY
-// ====================================================
-
 model User {
-  id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  password  String
-  avatar    String?  // URL da foto
-  phone     String?
-  role      Role     @default(CLIENT)
-  status    UserStatus @default(PENDING)
+  id                 String    @id @default(cuid())
+  name               String
+  email              String    @unique
+  password           String
+  role               Role      @default(CLIENT)
+  status             UserStatus @default(ACTIVE)
+  companyId          String?
+  company            Company?  @relation(fields: [companyId], references: [id])
+  emailVerifiedAt    DateTime?
+  phone              String?
+  phoneVerifiedAt    DateTime?
+  twoFactorEnabled   Boolean   @default(false)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
-  // Relação com Company (usuário pertence a uma empresa)
-  companyId String?
-  company   Company? @relation("CompanyUsers", fields: [companyId], references: [id])
-
-  // Relações
-  dogs              Dog[]
-  trainerProfile    TrainerProfile?
-  forumThreads      ForumThread[]
-  forumReplies      ForumReply[]
-  reviewsGiven      TrainerReview[] @relation("UserReviews")
-  reviewsReceived   TrainerReview[] @relation("TrainerReviews")
-  notifications     Notification[]
-  bookings          Booking[]         // reservas feitas como cliente
-  servicesOffered   Service[]         // serviços oferecidos (se autônomo)
-  trainerProfiles   TrainerProfile[]
-  trainingPlans     TrainingPlan[]
-  trainingSessions  TrainingSession[]
-  blogPosts         BlogPost[]
-  courses           Course[]
-  transactionsSent  Transaction[]     @relation("Payer")   // pagamentos feitos
-  transactionsReceived Transaction[]  @relation("Payee")   // pagamentos recebidos
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  dogs               Dog[]
+  schedules          Schedule[]
+  blogPosts          BlogPost[]
+  forumThreads       ForumThread[] @relation("UserForumThreads")
+  forumReplies       ForumReply[]  @relation("UserForumReplies")
+  payments           Payment[]
+  auditLogs          AuditLog[]
+  verificationCodes  VerificationCode[]
 }
 
 model Company {
   id          String   @id @default(cuid())
   name        String
-  slug        String   @unique
-  description String?
-  logo        String?  // URL da imagem
-  coverImage  String?
-  phone       String?
-  email       String?
-  website     String?
-  address     String?
-  city        String?
-  state       String?
-  zipCode     String?
-  latitude    Float?   // para buscas por geolocalização
-  longitude   Float?
-  verified    Boolean  @default(false) // selo de verificação
-
-  // Relação com o dono da empresa (User)
-  ownerId     String   @unique
-  owner       User     @relation("CompanyOwner", fields: [ownerId], references: [id])
-
-  ownedCompanies Company[] @relation("CompanyOwner")
-
-  // Lista de usuários que pertencem à empresa (funcionários, etc.)
-  users       User[]   @relation("CompanyUsers")
-
-  // Outras relações
+  createdAt   DateTime @default(now())
+  users       User[]
   dogs        Dog[]
-  trainings   TrainingSession[]
-  services    Service[]
-  subscriptions Subscription[]
-  trainingPlans TrainingPlan[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
-
-// ====================================================
-// DOGS
-// ====================================================
 
 model Dog {
   id        String   @id @default(cuid())
   name      String
   breed     String
-  birthDate DateTime // substitui age para cálculo dinâmico
-  weight    Float?
-  gender    Gender?
-  neutered  Boolean  @default(false)
-  microchip String?
-  avatar    String?
-
+  age       Int
   ownerId   String
   owner     User     @relation(fields: [ownerId], references: [id])
-
   companyId String?
   company   Company? @relation(fields: [companyId], references: [id])
-
-  profile   DogProfile?
-  skills    DogSkill[]
   trainings TrainingSession[]
-  bookings  Booking[] // reservas onde este cão é o foco
-
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model DogProfile {
-  id        String   @id @default(cuid())
-  dogId     String   @unique
-  bio       String?
-  city      String?
-  instagram String?
-
-  dog       Dog      @relation(fields: [dogId], references: [id])
-}
-
-// ====================================================
-// SKILLS / PROGRESS
-// ====================================================
-
-model Skill {
-  id        String   @id @default(cuid())
-  name      String
-  dogs      DogSkill[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model DogSkill {
-  id        String   @id @default(cuid())
-  dogId     String
-  skillId   String
-  done      Boolean  @default(false)
-
-  dog       Dog      @relation(fields: [dogId], references: [id])
-  skill     Skill    @relation(fields: [skillId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-// ====================================================
-// TRAINERS
-// ====================================================
-
-model TrainerProfile {
-  id          String   @id @default(cuid())
-  userId      String   @unique
-  bio         String?
-  specialties String[] // array de strings (ex: ["Obediência", "Agressividade"])
-  experience  Int?     // anos de experiência
-  price       Float?   // preço médio por sessão (opcional)
-  rating      Float?   // média das avaliações
-  city        String?
-  state       String?
-  latitude    Float?
-  longitude   Float?
-
-  user        User     @relation(fields: [userId], references: [id])
-  services    Service[] // serviços oferecidos por este trainer (se não vinculado a company)
-}
-
-model TrainerReview {
-  id        String   @id @default(cuid())
-  rating    Int
-  comment   String?
-
-  trainerId String
-  userId    String
-
-  trainer   User     @relation("TrainerReviews", fields: [trainerId], references: [id])
-  user      User     @relation("UserReviews", fields: [userId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-// ====================================================
-// TRAINING PLANS & SESSIONS
-// ====================================================
-
-model TrainingPlan {
-  id          String   @id @default(cuid())
-  title       String
-  description String?
-  price       Float    // valor total do pacote
-  sessions    Int      // número de sessões incluídas
-  duration    Int?     // duração estimada em dias
-
-  companyId   String?
-  company     Company? @relation(fields: [companyId], references: [id])
-  trainerId   String?  // se for trainer autônomo
-  trainer     User?    @relation("TrainingPlans", fields: [trainerId], references: [id])
-
-  sessionsList TrainingSession[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 model TrainingSession {
   id          String   @id @default(cuid())
-  title       String?
-  notes       String?
-  date        DateTime
-  duration    Int?     // minutos
-  location    String?  // "online" ou endereço
-  status      SessionStatus @default(SCHEDULED)
-
+  title       String
+  description String?
+  progress    Int
   dogId       String
-  trainerId   String
-  companyId   String?
-  planId      String?  // se fizer parte de um pacote
-  bookingId   String?      @unique  // se originada de uma reserva
-
-  dog         Dog          @relation(fields: [dogId], references: [id])
-  trainer     User         @relation("TrainingSessions", fields: [trainerId], references: [id])
-  company     Company?     @relation(fields: [companyId], references: [id])
-  plan        TrainingPlan? @relation(fields: [planId], references: [id])
-  booking     Booking?     @relation(fields: [bookingId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  dog         Dog      @relation(fields: [dogId], references: [id])
+  createdAt   DateTime @default(now())
 }
 
-// ====================================================
-// MARKETPLACE: SERVICES, BOOKINGS, TRANSACTIONS
-// ====================================================
-
-model Service {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  price       Float
-  duration    Int?     // minutos
-  type        ServiceType @default(IN_PERSON)
-  isActive    Boolean  @default(true)
-
-  companyId   String?
-  company     Company? @relation(fields: [companyId], references: [id])
-  trainerId   String?  // se for autônomo (sem company)
-  trainer     User?    @relation("Services", fields: [trainerId], references: [id])
-
-  bookings    Booking[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Schedule {
+  id       String   @id @default(cuid())
+  date     DateTime
+  status   String
+  userId   String
+  user     User     @relation(fields: [userId], references: [id])
 }
-
-model Booking {
-  id          String   @id @default(cuid())
-  date        DateTime // data/hora agendada
-  status      BookingStatus @default(PENDING)
-  notes       String?
-
-  serviceId   String
-  service     Service  @relation(fields: [serviceId], references: [id])
-  clientId    String   // quem contratou (User)
-  client      User     @relation(fields: [clientId], references: [id])
-  dogId       String?  // opcional, se for para um cão específico
-  dog         Dog?     @relation(fields: [dogId], references: [id])
-
-  // Após confirmação, pode gerar uma sessão de treino
-  trainingSession TrainingSession?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Transaction {
-  id               String   @id @default(cuid())
-  amount           Float
-  commission       Float?   // sua parte
-  status           TransactionStatus @default(PENDING)
-  paymentMethod    String?  // cartão, pix, etc.
-  gatewayResponse  Json?    // resposta do provedor de pagamento
-
-  // Quem pagou e quem recebeu
-  fromUserId       String
-  toUserId         String
-  fromUser         User     @relation("Payer", fields: [fromUserId], references: [id])
-  toUser           User     @relation("Payee", fields: [toUserId], references: [id])
-
-  // Referência ao item comprado (booking, subscription, course)
-  referenceId      String?  // ID do booking, subscription, course
-  referenceType    String?  // "booking", "subscription", "course"
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-// ====================================================
-// SUBSCRIPTIONS (PLANS FOR TRAINERS/COMPANIES)
-// ====================================================
-
-model Plan {
-  id          String   @id @default(cuid())
-  name        String   // "Básico", "Profissional"
-  description String?
-  price       Float    // mensal
-  features    String[] // lista de benefícios
-  maxClients  Int?     // limite de clientes (null = ilimitado)
-  maxDogs     Int?     // limite de cães
-
-  subscriptions Subscription[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Subscription {
-  id         String   @id @default(cuid())
-  status     SubscriptionStatus @default(ACTIVE)
-  startDate  DateTime
-  endDate    DateTime? // se for cancelada
-  nextBilling DateTime
-
-  companyId  String
-  company    Company  @relation(fields: [companyId], references: [id])
-  planId     String
-  plan       Plan     @relation(fields: [planId], references: [id])
-
-  transactions Transaction[] // pagamentos da assinatura
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-// ====================================================
-// CONTENT & COMMUNITY
-// ====================================================
 
 model BlogPost {
   id        String   @id @default(cuid())
@@ -405,99 +92,64 @@ model BlogPost {
   excerpt   String?
   content   String
   published Boolean  @default(true)
-  image     String?
-
   authorId  String
-  author    User     @relation("BlogPosts", fields: [authorId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  blogPosts BlogPost[]
-}
-
-model Course {
-  id          String   @id @default(cuid())
-  title       String
-  slug        String   @unique
-  description String?
-  price       Float?   // se for pago
-  thumbnail   String?
-  trainerId   String?  // instrutor responsável
-  trainer     User?    @relation("Courses", fields: [trainerId], references: [id])
-
-  modules     CourseModule[]
-  transactions Transaction[] // compras do curso
-
+  author    User     @relation(fields: [authorId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-model CourseModule {
+model Payment {
+  id            String   @id @default(cuid())
+  stripeEventId String   @unique
+  type          String
+  status        String?
+  amount        Int?
+  currency      String?
+  customerEmail String?
+  customerId    String?
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id])
+  raw           String?
+  createdAt     DateTime @default(now())
+}
+
+model AuditLog {
   id        String   @id @default(cuid())
-  title     String
-  courseId  String
-  course    Course   @relation(fields: [courseId], references: [id])
-  videos    Video[]
-  order     Int
-
+  actorId   String?
+  actor     User?    @relation(fields: [actorId], references: [id])
+  action    String
+  targetType String
+  targetId  String?
+  metadata  String?
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Video {
-  id          String   @id @default(cuid())
-  title       String
-  url         String
-  duration    Int?     // segundos
-  thumbnail   String?
-  description String?
-  isPremium   Boolean  @default(false)
-  price       Float?   // se for avulso e pago
-  courseId    String?
-  course      Course?  @relation(fields: [courseId], references: [id])
-  category    String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 model ForumThread {
   id        String   @id @default(cuid())
   title     String
   content   String
-
   authorId  String
-  author    User     @relation(fields: [authorId], references: [id])
-
+  author    User     @relation("UserForumThreads", fields: [authorId], references: [id])
   replies   ForumReply[]
-
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 model ForumReply {
   id        String   @id @default(cuid())
   content   String
-
   authorId  String
-  author    User     @relation(fields: [authorId], references: [id])
-
+  author    User     @relation("UserForumReplies", fields: [authorId], references: [id])
   threadId  String
   thread    ForumThread @relation(fields: [threadId], references: [id])
-
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
-model Notification {
+model VerificationCode {
   id        String   @id @default(cuid())
-  message   String
-  read      Boolean  @default(false)
-  link      String?  // URL para redirecionamento ao clicar
-
   userId    String
   user      User     @relation(fields: [userId], references: [id])
-
+  type      String
+  code      String
+  expiresAt DateTime
   createdAt DateTime @default(now())
 }

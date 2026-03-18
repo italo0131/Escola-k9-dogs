@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
 import { createHash, randomBytes, scryptSync, timingSafeEqual } from "crypto"
 import { getServerSession } from "next-auth"
+import type { Session } from "next-auth"
 import { authOptions } from "../auth/[...nextauth]/route"
 
 function hashPassword(password: string) {
@@ -22,7 +23,7 @@ function verifyPassword(stored: string, input: string) {
 }
 
 export async function GET() {
-  const session = await getServerSession(authOptions as any)
+  const session = (await getServerSession(authOptions as any)) as Session | null
   if (!session?.user?.id) return NextResponse.json({ success: false, message: "Sem sessão" }, { status: 401 })
 
   const user = await prisma.user.findUnique({
@@ -59,7 +60,7 @@ export async function GET() {
 
 export async function PATCH(req: Request) {
   try {
-    const session = await getServerSession(authOptions as any)
+    const session = (await getServerSession(authOptions as any)) as Session | null
     if (!session?.user?.id) return NextResponse.json({ success: false, message: "Sem sessão" }, { status: 401 })
 
     const data = await req.json()

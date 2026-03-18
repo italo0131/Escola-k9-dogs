@@ -11,7 +11,7 @@ export default async function AdminClientsPage() {
   }
 
   const clients = await prisma.user.findMany({
-    where: { role: { in: ["CLIENT", "client"] } },
+    where: { role: { in: ["CLIENT"] } },
     include: {
       dogs: { include: { trainings: true } },
       schedules: true,

@@ -5,6 +5,8 @@ import UserBanner from "./components/UserBanner"
 import { Space_Grotesk } from "next/font/google"
 import { Providers } from "./providers"
 
+export const dynamic = "force-dynamic"
+
 const grotesk = Space_Grotesk({ subsets: ["latin"], weight: ["400", "500", "600", "700"] })
 
 export default function RootLayout({ children }: { children: ReactNode }) {

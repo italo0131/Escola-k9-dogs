@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
 import { isStaffRole } from "@/lib/role"
 import { getServerSession } from "next-auth"
+import type { Session } from "next-auth"
 import { authOptions } from "../auth/[...nextauth]/route"
 import { requireApiUser } from "../_auth"
 
@@ -15,7 +16,7 @@ function slugify(input: string) {
 }
 
 export async function GET() {
-  const session = await getServerSession(authOptions as any)
+  const session = (await getServerSession(authOptions as any)) as Session | null
   const canViewDrafts = isStaffRole(session?.user?.role)
 
   const posts = await prisma.blogPost.findMany({
@@ -45,6 +46,7 @@ export async function POST(req: Request) {
   }
 
   const canPublish = isStaffRole(session.user.role)
+  const authorId = session.user.id!
   const post = await prisma.blogPost.create({
     data: {
       title: data.title,
@@ -52,7 +54,7 @@ export async function POST(req: Request) {
       excerpt: data.excerpt || null,
       content: data.content,
       published: canPublish ? data.published ?? true : false,
-      authorId: session.user.id,
+      authorId,
     },
   })
 

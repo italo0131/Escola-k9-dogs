@@ -20,5 +20,9 @@
 **/obj
 **/secrets.dev.yaml
 **/values.dev.yaml
+node_modules
+.next
+.git
+.env
 LICENSE
 README.md

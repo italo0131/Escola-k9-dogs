@@ -2,10 +2,11 @@ import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
 import { createVerificationCode } from "@/lib/verification"
 import { getServerSession } from "next-auth"
+import type { Session } from "next-auth"
 import { authOptions } from "../../../auth/[...nextauth]/route"
 
 export async function POST(req: Request) {
-  const session = await getServerSession(authOptions as any)
+  const session = (await getServerSession(authOptions as any)) as Session | null
   if (!session?.user?.id) {
     return NextResponse.json({ success: false, message: "Não autenticado" }, { status: 401 })
   }

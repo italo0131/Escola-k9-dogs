@@ -1,12 +1,23 @@
-import { Resend } from 'resend';
-import { prisma } from './prisma';
+import { Resend } from "resend"
+import { prisma } from "./prisma"
 
-const resend = new Resend(process.env.RESEND_API_KEY || '');
+let resendClient: Resend | null = null
+function getResend() {
+  if (!resendClient) {
+    const apiKey = process.env.RESEND_API_KEY
+    if (!apiKey) {
+      throw new Error("Missing RESEND_API_KEY")
+    }
+    resendClient = new Resend(apiKey)
+  }
+  return resendClient
+}
 
 export async function sendVerifyEmail(userId: string, code: string) {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) throw new Error('User not found');
 
+  const resend = getResend()
   await resend.emails.send({
     from: 'no-reply@k9training.com',
     to: user.email,
@@ -19,6 +30,7 @@ export async function sendApprovalEmail(userId: string, approverName: string) {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) throw new Error('User not found');
 
+  const resend = getResend()
   await resend.emails.send({
     from: 'admin@k9training.com',
     to: user.email,
@@ -31,6 +43,7 @@ export async function sendRejectionEmail(userId: string, reason: string) {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) throw new Error('User not found');
 
+  const resend = getResend()
   await resend.emails.send({
     from: 'no-reply@k9training.com',
     to: user.email,

@@ -3,6 +3,7 @@ import Link from "next/link"
 import { requireUser, isAdminSession } from "@/lib/auth"
 import { isRootRole } from "@/lib/role"
 import RootConsole from "./RootConsole"
+import { Role } from "@prisma/client"
 
 type StatCardConfig = {
   title: string
@@ -16,8 +17,8 @@ export default async function Dashboard() {
   const isRoot = isRootRole(session.user.role)
 
   if (isRoot) {
-    const clientRoles = ["CLIENT", "client"]
-    const staffRoles = ["ADMIN", "admin", "ROOT", "root", "SUPERADMIN", "superadmin", "TRAINER", "trainer"]
+    const clientRoles: Role[] = ["CLIENT"]
+    const staffRoles: Role[] = ["ADMIN", "ROOT", "SUPERADMIN", "TRAINER"]
 
     const [
       userCount,

@@ -18,7 +18,7 @@ export default async function AdminTrainingsPage() {
   const rows = trainings.map((training) => ({
     id: training.id,
     title: training.title,
-    description: training.description,
+    description: training.description || "",
     progress: training.progress,
     dogId: training.dogId,
     dogName: training.dog?.name || null,

@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma"
+import { Role } from "@prisma/client"
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
+import type { Session } from "next-auth"
 import { authOptions } from "../../auth/[...nextauth]/route"
 import { isAdminRole } from "@/lib/role"
 import { logAudit } from "@/lib/audit"
@@ -11,7 +13,7 @@ export async function POST(req: Request) {
   const provided = req.headers.get("x-admin-key")
   const providedRoot = req.headers.get("x-root-key")
 
-  const session = await getServerSession(authOptions as any)
+  const session = (await getServerSession(authOptions as any)) as Session | null
   const isAdmin = isAdminRole(session?.user?.role)
 
   const data = await req.json()
@@ -20,7 +22,7 @@ export async function POST(req: Request) {
   }
 
   const adminCount = await prisma.user.count({
-    where: { role: { in: ["ADMIN", "admin", "ROOT", "root", "SUPERADMIN", "superadmin"] } },
+    where: { role: { in: ["ADMIN", "ROOT", "SUPERADMIN"] } },
   })
 
   if (!isAdmin) {
@@ -34,8 +36,8 @@ export async function POST(req: Request) {
     }
   }
 
-  const role = String(data.role || "ADMIN").toUpperCase()
-  const allowed = ["ADMIN", "ROOT", "SUPERADMIN", "TRAINER", "CLIENT"]
+  const role = String(data.role || "ADMIN").toUpperCase() as Role
+  const allowed: Role[] = ["ADMIN", "ROOT", "SUPERADMIN", "TRAINER", "CLIENT"]
   if (!allowed.includes(role)) {
     return NextResponse.json({ success: false, message: "Role inválida" }, { status: 400 })
   }

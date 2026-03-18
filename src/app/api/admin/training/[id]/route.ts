@@ -1,9 +1,10 @@
 import { prisma } from "@/lib/prisma"
-import { NextResponse } from "next/server"
+import { NextResponse, NextRequest } from "next/server"
 import { requireApiRoot } from "@/app/api/_auth"
 import { logAudit } from "@/lib/audit"
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const { session, error } = await requireApiRoot()
   if (error) return error
 
@@ -21,14 +22,14 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 
   try {
     const training = await prisma.trainingSession.update({
-      where: { id: params.id },
+      where: { id },
       data: updates,
     })
     await logAudit({
       actorId: session?.user?.id || null,
       action: "TRAINING_UPDATE",
       targetType: "training",
-      targetId: params.id,
+      targetId: id,
       metadata: updates,
     })
     return NextResponse.json({ success: true, training })
@@ -38,17 +39,18 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   }
 }
 
-export async function DELETE(_: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const { session, error } = await requireApiRoot()
   if (error) return error
 
   try {
-    await prisma.trainingSession.delete({ where: { id: params.id } })
+    await prisma.trainingSession.delete({ where: { id } })
     await logAudit({
       actorId: session?.user?.id || null,
       action: "TRAINING_DELETE",
       targetType: "training",
-      targetId: params.id,
+      targetId: id,
     })
     return NextResponse.json({ success: true })
   } catch (err) {

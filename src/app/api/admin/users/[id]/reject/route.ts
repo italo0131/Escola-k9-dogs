@@ -1,14 +1,14 @@
-import { NextResponse } from "next/server"
+import { NextResponse, NextRequest } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { requireApiRoot } from "@/app/api/_auth"
 import { logAudit } from "@/lib/audit"
 import { sendRejectionEmail } from "@/lib/email"
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { session, error } = await requireApiRoot()
   if (error) return error
 
-  const id = params.id
+  const { id } = await params
   const data = await req.json().catch(() => ({}))
   const reason = data.reason || "Não aprovado"
 
@@ -17,7 +17,6 @@ export async function POST(req: Request, { params }: { params: { id: string } })
       where: { id },
       data: {
         status: "SUSPENDED",
-        suspendedAt: new Date(),
       },
     })
 

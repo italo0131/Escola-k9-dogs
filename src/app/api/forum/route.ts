@@ -47,11 +47,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: false, message: "Limite temporário atingido. Tente novamente em alguns minutos." }, { status: 429 })
   }
 
+  const authorId = session.user.id!
   const thread = await prisma.forumThread.create({
     data: {
       title,
       content,
-      authorId: session.user.id,
+      authorId,
     },
   })
 

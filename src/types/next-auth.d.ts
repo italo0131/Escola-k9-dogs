@@ -12,6 +12,8 @@ declare module "next-auth" {
       email?: string | null
       role?: string
       emailVerifiedAt?: string | null
+      status?: string
+      twoFactorEnabled?: boolean
     }
   }
 }
@@ -21,5 +23,6 @@ declare module "next-auth/jwt" {
     role?: string
     emailVerifiedAt?: string | null
     twoFactorEnabled?: boolean
+    status?: string
   }
 }

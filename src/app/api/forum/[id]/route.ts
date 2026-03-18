@@ -1,12 +1,13 @@
 import { prisma } from "@/lib/prisma"
-import { NextResponse } from "next/server"
+import { NextResponse, NextRequest } from "next/server"
 import { requireApiUser } from "../../_auth"
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { error } = await requireApiUser()
   if (error) return error
+  const { id } = await params
   const thread = await prisma.forumThread.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: { author: true, replies: { include: { author: true }, orderBy: { createdAt: "asc" } } },
   })
 

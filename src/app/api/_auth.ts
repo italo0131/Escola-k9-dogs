@@ -1,14 +1,17 @@
 import { getServerSession } from "next-auth"
+import type { Session } from "next-auth"
 import { NextResponse } from "next/server"
 import { authOptions } from "./auth/[...nextauth]/route"
 import { isAdminRole, isRootRole, isStaffRole } from "@/lib/role"
 
-export async function requireApiUser() {
-  const session = await getServerSession(authOptions as any)
+type ApiSession = Session & { user: NonNullable<Session["user"]> }
+
+export async function requireApiUser(): Promise<{ session: ApiSession; error: null } | { session: null; error: NextResponse }> {
+  const session = (await getServerSession(authOptions as any)) as ApiSession | null
   if (!session?.user?.id) {
     return { session: null, error: NextResponse.json({ success: false, message: "Não autenticado" }, { status: 401 }) }
   }
-  return { session, error: null }
+  return { session: session as ApiSession, error: null }
 }
 
 export async function requireApiStaff() {

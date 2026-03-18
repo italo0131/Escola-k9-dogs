@@ -1,9 +1,10 @@
 import { prisma } from "@/lib/prisma"
-import { NextResponse } from "next/server"
+import { NextResponse, NextRequest } from "next/server"
 import { requireApiRoot } from "@/app/api/_auth"
 import { logAudit } from "@/lib/audit"
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const { session, error } = await requireApiRoot()
   if (error) return error
 
@@ -21,7 +22,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 
   try {
     const dog = await prisma.dog.update({
-      where: { id: params.id },
+      where: { id },
       data: updates,
       include: { owner: true },
     })
@@ -29,7 +30,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       actorId: session?.user?.id || null,
       action: "DOG_UPDATE",
       targetType: "dog",
-      targetId: params.id,
+      targetId: id,
       metadata: updates,
     })
     return NextResponse.json({ success: true, dog })
@@ -39,17 +40,18 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   }
 }
 
-export async function DELETE(_: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const { session, error } = await requireApiRoot()
   if (error) return error
 
   try {
-    await prisma.dog.delete({ where: { id: params.id } })
+    await prisma.dog.delete({ where: { id } })
     await logAudit({
       actorId: session?.user?.id || null,
       action: "DOG_DELETE",
       targetType: "dog",
-      targetId: params.id,
+      targetId: id,
     })
     return NextResponse.json({ success: true })
   } catch (err) {

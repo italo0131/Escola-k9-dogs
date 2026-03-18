@@ -1,15 +1,16 @@
 import { prisma } from "@/lib/prisma"
-import { NextResponse } from "next/server"
+import { NextResponse, NextRequest } from "next/server"
 import { isStaffRole } from "@/lib/role"
 import { requireApiUser } from "../../_auth"
 
-export async function GET(req: Request, { params }: { params: { slug: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const { session, error } = await requireApiUser()
   if (error) return error
   const isStaff = isStaffRole(session?.user?.role)
+  const { slug } = await params
 
   const post = await prisma.blogPost.findUnique({
-    where: { slug: params.slug },
+    where: { slug },
     include: { author: true },
   })
 

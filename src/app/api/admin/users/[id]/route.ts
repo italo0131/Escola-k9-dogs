@@ -1,16 +1,16 @@
 import { prisma } from "@/lib/prisma"
-import { NextResponse } from "next/server"
+import { NextResponse, NextRequest } from "next/server"
 import { requireApiRoot } from "@/app/api/_auth"
 import { logAudit } from "@/lib/audit"
 
 const ALLOWED_ROLES = ["ADMIN", "ROOT", "SUPERADMIN", "TRAINER", "CLIENT"]
 const ALLOWED_STATUS = ["ACTIVE", "SUSPENDED"]
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { session, error } = await requireApiRoot()
   if (error) return error
 
-  const id = params.id
+  const { id } = await params
   const data = await req.json().catch(() => ({}))
 
   const updates: any = {}
@@ -32,7 +32,6 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       return NextResponse.json({ success: false, message: "Status invalido" }, { status: 400 })
     }
     updates.status = status
-    updates.suspendedAt = status === "SUSPENDED" ? new Date() : null
   }
 
   if (typeof data.twoFactorEnabled === "boolean") {

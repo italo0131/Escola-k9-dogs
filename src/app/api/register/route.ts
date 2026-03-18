@@ -29,7 +29,7 @@ export async function POST(req: Request) {
         email: data.email,
         password: hashedPassword,
         phone: data.phone || null,
-        status: "PENDING",
+        status: "ACTIVE",
       },
     })
 
@@ -44,7 +44,7 @@ export async function POST(req: Request) {
 
     const { password, ...safeUser } = user
 
-    return NextResponse.json({ success: true, user: safeUser, message: "Conta criada em PENDING. Verifique email." }, { status: 201 })
+    return NextResponse.json({ success: true, user: safeUser, message: "Conta criada. Verifique email." }, { status: 201 })
   } catch (error: any) {
     console.error("ERRO API POST /register:", error)
 
