@@ -1,10 +1,17 @@
-import { useSession } from "next-auth/react"
+import { usePlatformSession } from "@/app/components/PlatformSessionProvider"
 
 export function useAuth() {
-  const { data, status } = useSession()
+  const { session, status, isLoggedIn, role, plan, planStatus, emailVerified, hasPremiumAccess, refreshSession } = usePlatformSession()
+
   return {
-    user: data?.user,
+    user: session?.user,
     status,
-    isAuthenticated: status === "authenticated",
+    role,
+    plan,
+    planStatus,
+    emailVerified,
+    hasPremiumAccess,
+    isAuthenticated: isLoggedIn,
+    refreshSession,
   }
 }

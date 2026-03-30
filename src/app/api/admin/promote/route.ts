@@ -1,10 +1,9 @@
 import { prisma } from "@/lib/prisma"
-import { Role } from "@prisma/client"
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import type { Session } from "next-auth"
 import { authOptions } from "../../auth/[...nextauth]/route"
-import { isAdminRole } from "@/lib/role"
+import { isAdminRole, USER_ROLES, type UserRole } from "@/lib/role"
 import { logAudit } from "@/lib/audit"
 
 export async function POST(req: Request) {
@@ -36,8 +35,8 @@ export async function POST(req: Request) {
     }
   }
 
-  const role = String(data.role || "ADMIN").toUpperCase() as Role
-  const allowed: Role[] = ["ADMIN", "ROOT", "SUPERADMIN", "TRAINER", "CLIENT"]
+  const role = String(data.role || "ADMIN").toUpperCase() as UserRole
+  const allowed: UserRole[] = [...USER_ROLES]
   if (!allowed.includes(role)) {
     return NextResponse.json({ success: false, message: "Role inválida" }, { status: 400 })
   }

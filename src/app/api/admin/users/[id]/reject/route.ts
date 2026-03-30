@@ -1,11 +1,11 @@
 import { NextResponse, NextRequest } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { requireApiRoot } from "@/app/api/_auth"
+import { requireApiAdmin } from "@/app/api/_auth"
 import { logAudit } from "@/lib/audit"
 import { sendRejectionEmail } from "@/lib/email"
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { session, error } = await requireApiRoot()
+  const { session, error } = await requireApiAdmin()
   if (error) return error
 
   const { id } = await params

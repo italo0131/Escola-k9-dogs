@@ -3,17 +3,33 @@ import Credentials from "next-auth/providers/credentials"
 import type { NextAuthOptions, Session } from "next-auth"
 import type { JWT } from "next-auth/jwt"
 import { prisma } from "@/lib/prisma"
-import { createHash, scryptSync, timingSafeEqual } from "crypto"
+import { createHash, randomBytes, scryptSync, timingSafeEqual } from "crypto"
+import bcrypt from "bcrypt"
 import { createVerificationCode, verifyCode } from "@/lib/verification"
-function verifyPassword(stored: string, input: string) {
+import { takeRateLimit } from "@/lib/security"
+
+function normalizeEmail(email: string) {
+  return email.trim().toLowerCase()
+}
+
+async function verifyPassword(stored: string, input: string) {
+  if (stored.startsWith("$2a$") || stored.startsWith("$2b$") || stored.startsWith("$2y$")) {
+    return { valid: await bcrypt.compare(input, stored), needsRehash: false }
+  }
   if (stored.startsWith("scrypt:")) {
     const [, salt, hash] = stored.split(":")
     const derivedInput = scryptSync(input, salt, 64)
-    return timingSafeEqual(Buffer.from(hash, "hex"), derivedInput)
+    return { valid: timingSafeEqual(Buffer.from(hash, "hex"), derivedInput), needsRehash: false }
   }
   const sha = createHash("sha256").update(input).digest("hex")
-  if (stored === sha) return true
-  return stored === input
+  if (stored === sha) return { valid: true, needsRehash: true }
+  return { valid: stored === input, needsRehash: stored === input }
+}
+
+function hashPassword(password: string) {
+  const salt = randomBytes(16).toString("hex")
+  const derived = scryptSync(password, salt, 64).toString("hex")
+  return `scrypt:${salt}:${derived}`
 }
 
 export const authOptions: NextAuthOptions = {
@@ -28,15 +44,24 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null
-        const user = await prisma.user.findUnique({ where: { email: credentials.email } })
+        const email = normalizeEmail(credentials.email)
+        const loginRateLimit = takeRateLimit(`auth:login:${email}`, 10, 10 * 60 * 1000)
+        if (!loginRateLimit.allowed) {
+          throw new Error("TOO_MANY_ATTEMPTS")
+        }
+        const user = await prisma.user.findUnique({ where: { email } })
         if (!user) return null
-        const ok = verifyPassword(user.password, credentials.password)
-        if (!ok) return null
+        const passwordCheck = await verifyPassword(user.password, credentials.password)
+        if (!passwordCheck.valid) return null
         if (user.status === "SUSPENDED") {
           throw new Error("ACCOUNT_SUSPENDED")
         }
-        if (!user.emailVerifiedAt) {
-          throw new Error("EMAIL_NOT_VERIFIED")
+
+        if (passwordCheck.needsRehash) {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { password: hashPassword(credentials.password) },
+          })
         }
 
         if (user.twoFactorEnabled) {
@@ -52,7 +77,14 @@ export const authOptions: NextAuthOptions = {
           }
         }
 
-        return { id: user.id, name: user.name, email: user.email, role: user.role }
+        return {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          plan: user.plan,
+          planStatus: user.planStatus,
+        }
       },
     }),
   ],
@@ -60,11 +92,15 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }: { token: JWT; user?: any }) {
       if (user) {
         token.role = (user as any).role
+        token.plan = (user as any).plan
+        token.planStatus = (user as any).planStatus
       }
       if (token.sub) {
         const dbUser = await prisma.user.findUnique({ where: { id: token.sub } })
         if (dbUser) {
           token.role = dbUser.role
+          token.plan = dbUser.plan
+          token.planStatus = dbUser.planStatus
           token.emailVerifiedAt = dbUser.emailVerifiedAt?.toISOString() || null
           token.twoFactorEnabled = dbUser.twoFactorEnabled
           token.status = dbUser.status
@@ -76,8 +112,11 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.id = token.sub!
         session.user.role = token.role as string
+        session.user.plan = token.plan as string
+        session.user.planStatus = token.planStatus as string
         session.user.emailVerifiedAt = token.emailVerifiedAt as string | null
         session.user.status = token.status as string
+        session.user.twoFactorEnabled = !!token.twoFactorEnabled
       }
       return session
     },

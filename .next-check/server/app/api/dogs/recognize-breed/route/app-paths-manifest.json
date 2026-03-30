@@ -1,0 +1,3 @@
+{
+  "/api/dogs/recognize-breed/route": "app/api/dogs/recognize-breed/route.js"
+}

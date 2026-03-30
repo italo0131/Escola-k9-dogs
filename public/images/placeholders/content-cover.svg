@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" fill="none">
+  <rect width="1200" height="720" fill="#020617"/>
+  <rect width="1200" height="720" fill="url(#bg)"/>
+  <circle cx="220" cy="180" r="180" fill="#06B6D4" fill-opacity=".12"/>
+  <circle cx="980" cy="140" r="210" fill="#F59E0B" fill-opacity=".10"/>
+  <circle cx="840" cy="560" r="240" fill="#10B981" fill-opacity=".10"/>
+  <rect x="120" y="120" width="960" height="480" rx="36" fill="#0F172A" fill-opacity=".82" stroke="#334155" stroke-opacity=".9"/>
+  <rect x="180" y="186" width="180" height="180" rx="28" fill="#06B6D4" fill-opacity=".14"/>
+  <path d="M246 298c0-28 22-50 50-50s50 22 50 50-22 50-50 50-50-22-50-50Z" fill="#67E8F9" fill-opacity=".7"/>
+  <path d="M454 234h372" stroke="#E2E8F0" stroke-opacity=".88" stroke-width="28" stroke-linecap="round"/>
+  <path d="M454 304h300" stroke="#94A3B8" stroke-opacity=".85" stroke-width="22" stroke-linecap="round"/>
+  <path d="M454 366h248" stroke="#94A3B8" stroke-opacity=".65" stroke-width="20" stroke-linecap="round"/>
+  <rect x="454" y="440" width="156" height="52" rx="20" fill="#F59E0B" fill-opacity=".18"/>
+  <rect x="628" y="440" width="210" height="52" rx="20" fill="#10B981" fill-opacity=".18"/>
+  <text x="180" y="560" fill="#E2E8F0" fill-opacity=".92" font-family="Arial, sans-serif" font-size="34" font-weight="700">
+    Midia indisponivel no momento
+  </text>
+  <text x="180" y="606" fill="#94A3B8" font-family="Arial, sans-serif" font-size="24">
+    O conteudo continua publicado, mas a imagem original nao esta mais no armazenamento local.
+  </text>
+  <defs>
+    <linearGradient id="bg" x1="120" y1="48" x2="1048" y2="680" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0F172A"/>
+      <stop offset="1" stop-color="#111827"/>
+    </linearGradient>
+  </defs>
+</svg>

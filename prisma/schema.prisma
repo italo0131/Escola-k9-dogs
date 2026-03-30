@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
@@ -7,95 +7,177 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-enum Role {
-  ROOT
-  SUPERADMIN
-  ADMIN
-  TRAINER
-  CLIENT
-}
-
-enum UserStatus {
-  ACTIVE
-  SUSPENDED
-}
 
 model User {
-  id                 String    @id @default(cuid())
-  name               String
-  email              String    @unique
-  password           String
-  role               Role      @default(CLIENT)
-  status             UserStatus @default(ACTIVE)
-  companyId          String?
-  company            Company?  @relation(fields: [companyId], references: [id])
-  emailVerifiedAt    DateTime?
-  phone              String?
-  phoneVerifiedAt    DateTime?
-  twoFactorEnabled   Boolean   @default(false)
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
+  id                String    @id @default(cuid())
+  name              String
+  email             String    @unique
+  password          String
+  role              String    @default("CLIENT")
+  status            String    @default("ACTIVE")
+  plan              String    @default("FREE")
+  planStatus        String    @default("ACTIVE")
+  planActivatedAt   DateTime?
+  headline          String?
+  bio               String?
+  city              String?
+  state             String?
+  specialties       String?
+  experienceYears   Int?
+  availabilityNotes String?
+  websiteUrl        String?
+  instagramHandle   String?
+  companyId         String?
+  company           Company?  @relation(fields: [companyId], references: [id])
+  emailVerifiedAt   DateTime?
+  phone             String?
+  phoneVerifiedAt   DateTime?
+  twoFactorEnabled  Boolean   @default(false)
+  breedAdvisorProfile Json?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
-  dogs               Dog[]
-  schedules          Schedule[]
-  blogPosts          BlogPost[]
-  forumThreads       ForumThread[] @relation("UserForumThreads")
-  forumReplies       ForumReply[]  @relation("UserForumReplies")
-  payments           Payment[]
-  auditLogs          AuditLog[]
-  verificationCodes  VerificationCode[]
+  dogs                 Dog[]
+  schedules            Schedule[]
+  assignedSchedules    Schedule[]            @relation("ScheduleTrainer")
+  blogPosts            BlogPost[]
+  blogComments         BlogComment[]         @relation("UserBlogComments")
+  blogReactions        BlogPostReaction[]
+  forumChannels        ForumChannel[]        @relation("ForumChannelOwner")
+  channelSubscriptions ChannelSubscription[]
+  channelContents      ChannelContent[]      @relation("ChannelContentAuthor")
+  forumThreads         ForumThread[]         @relation("UserForumThreads")
+  forumThreadReactions ForumThreadReaction[]
+  forumReplies         ForumReply[]          @relation("UserForumReplies")
+  coachedTrainings     TrainingSession[]     @relation("TrainingSessionCoach")
+  payments             Payment[]
+  auditLogs            AuditLog[]
+  verificationCodes    VerificationCode[]
+forumPosts ForumPost[] @relation("UserForumPosts")
 }
 
 model Company {
-  id          String   @id @default(cuid())
-  name        String
-  createdAt   DateTime @default(now())
-  users       User[]
-  dogs        Dog[]
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  users     User[]
+  dogs      Dog[]
 }
 
 model Dog {
-  id        String   @id @default(cuid())
-  name      String
-  breed     String
-  age       Int
-  ownerId   String
-  owner     User     @relation(fields: [ownerId], references: [id])
-  companyId String?
-  company   Company? @relation(fields: [companyId], references: [id])
-  trainings TrainingSession[]
-  createdAt DateTime @default(now())
+  id                         String            @id @default(cuid())
+  name                       String
+  breed                      String
+  breedApiId                 String?
+  breedGroup                 String?
+  breedOrigin                String?
+  breedTemperament           String?
+  breedDescription           String?
+  breedLifeSpan              String?
+  breedWeightMinKg           Float?
+  breedWeightMaxKg           Float?
+  breedHeightReferenceCm     String?
+  breedReferenceImageUrl     String?
+  age                        Int
+  size                       String?
+  weightKg                   Float?
+  gender                     String?
+  color                      String?
+  birthDate                  DateTime?
+  foodName                   String?
+  mealsPerDay                Int?
+  portionSize                String?
+  feedingTimes               String?
+  allergies                  String?
+  medications                String?
+  healthNotes                String?
+  behaviorNotes              String?
+  energyLevel                String?
+  activityProfile            String            @default("COMPANION")
+  sportFocus                 String?
+  dailyExerciseGoalMinutes   Int?
+  weeklyConditioningSessions Int?
+  bodyConditionScore         Int?
+  restingHeartRateBpm        Int?
+  athleteClearance           Boolean           @default(false)
+  lastVetCheckupAt           DateTime?
+  hydrationPlan              String?
+  supplements                String?
+  injuryHistory              String?
+  veterinaryRestrictions     String?
+  recoveryNotes              String?
+  performanceGoals           String?
+  vaccinated                 Boolean           @default(false)
+  neutered                   Boolean           @default(false)
+  ownerId                    String
+  owner                      User              @relation(fields: [ownerId], references: [id])
+  companyId                  String?
+  company                    Company?          @relation(fields: [companyId], references: [id])
+  schedules                  Schedule[]
+  trainings                  TrainingSession[]
+  createdAt                  DateTime          @default(now())
 }
 
 model TrainingSession {
-  id          String   @id @default(cuid())
-  title       String
-  description String?
-  progress    Int
-  dogId       String
-  dog         Dog      @relation(fields: [dogId], references: [id])
-  createdAt   DateTime @default(now())
+  id              String   @id @default(cuid())
+  title           String
+  description     String?
+  focusArea       String?
+  difficulty      String?
+  durationMinutes Int?
+  trainerNotes    String?
+  homework        String?
+  videoUrl        String?
+  progress        Int
+  dogId           String
+  dog             Dog      @relation(fields: [dogId], references: [id])
+  coachId         String?
+  coach           User?    @relation("TrainingSessionCoach", fields: [coachId], references: [id])
+  executedAt      DateTime @default(now())
+  createdAt       DateTime @default(now())
 }
 
 model Schedule {
-  id       String   @id @default(cuid())
-  date     DateTime
-  status   String
-  userId   String
-  user     User     @relation(fields: [userId], references: [id])
+  id              String   @id @default(cuid())
+  title           String   @default("Sessao de treino")
+  notes           String?
+  location        String?
+  format          String   @default("PRESENTIAL")
+  durationMinutes Int?
+  date            DateTime
+  status          String
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  trainerId       String?
+  trainer         User?    @relation("ScheduleTrainer", fields: [trainerId], references: [id])
+  dogId           String?
+  dog             Dog?     @relation(fields: [dogId], references: [id])
 }
 
 model BlogPost {
-  id        String   @id @default(cuid())
-  title     String
-  slug      String   @unique
-  excerpt   String?
-  content   String
-  published Boolean  @default(true)
-  authorId  String
-  author    User     @relation(fields: [authorId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String    @id @default(cuid())
+  title         String
+  slug          String    @unique
+  category      String    @default("GERAL")
+  postType      String    @default("POST")
+  accessLevel   String    @default("FREE")
+  excerpt       String?
+  content       String
+  coverImageUrl String?
+  videoUrl      String?
+  featured      Boolean   @default(false)
+  eventStartsAt DateTime?
+  eventEndsAt   DateTime?
+  eventLocation String?
+  eventCity     String?
+  eventState    String?
+  published     Boolean   @default(true)
+  authorId      String
+  author        User      @relation(fields: [authorId], references: [id])
+  comments      BlogComment[]
+  reactions     BlogPostReaction[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }
 
 model Payment {
@@ -114,34 +196,120 @@ model Payment {
 }
 
 model AuditLog {
-  id        String   @id @default(cuid())
-  actorId   String?
-  actor     User?    @relation(fields: [actorId], references: [id])
-  action    String
+  id         String   @id @default(cuid())
+  actorId    String?
+  actor      User?    @relation(fields: [actorId], references: [id])
+  action     String
   targetType String
-  targetId  String?
-  metadata  String?
-  createdAt DateTime @default(now())
+  targetId   String?
+  metadata   String?
+  createdAt  DateTime @default(now())
 }
 
-model ForumThread {
-  id        String   @id @default(cuid())
-  title     String
+model ForumChannel {
+  id                String                @id @default(cuid())
+  slug              String                @unique
+  name              String
+  description       String
+  category          String                @default("COMUNIDADE")
+  serviceMode       String                @default("COMMUNITY")
+  subscriptionPrice Int?
+  onlinePrice       Int?
+  inPersonPrice     Int?
+  city              String?
+  state             String?
+  acceptsRemote     Boolean               @default(false)
+  isPublic          Boolean               @default(true)
+  featured          Boolean               @default(false)
+  ownerId           String
+  owner             User                  @relation("ForumChannelOwner", fields: [ownerId], references: [id])
+  subscriptions     ChannelSubscription[]
+  contents          ChannelContent[]
+  threads           ForumThread[]
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+}
+
+model ChannelSubscription {
+  id        String       @id @default(cuid())
+  status    String       @default("ACTIVE")
+  tier      String       @default("FREE")
+  startedAt DateTime     @default(now())
+  endedAt   DateTime?
+  channelId String
+  channel   ForumChannel @relation(fields: [channelId], references: [id])
+  userId    String
+  user      User         @relation(fields: [userId], references: [id])
+
+  @@unique([channelId, userId])
+}
+
+model ChannelContent {
+  id              String       @id @default(cuid())
+  slug            String       @unique
+  title           String
+  summary         String?
+  body            String
+  coverImageUrl   String?
+  category        String       @default("TREINO")
+  contentType     String       @default("LESSON")
+  accessLevel     String       @default("SUBSCRIBER")
+  objective       String?
+  difficulty      String?
+  durationMinutes Int?
+  orderIndex      Int?
+  videoUrl        String?
+  published       Boolean      @default(true)
+  authorId        String
+  author          User         @relation("ChannelContentAuthor", fields: [authorId], references: [id])
+  channelId       String
+  channel         ForumChannel @relation(fields: [channelId], references: [id])
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+}
+model ForumPost {
+  id        String      @id @default(cuid())
   content   String
+  threadId  String
+  thread    ForumThread @relation(fields: [threadId], references: [id])
   authorId  String
-  author    User     @relation("UserForumThreads", fields: [authorId], references: [id])
-  replies   ForumReply[]
-  createdAt DateTime @default(now())
+  author    User        @relation("UserForumPosts", fields: [authorId], references: [id])
+  createdAt DateTime    @default(now())
+}
+
+
+model ForumThread {
+  id            String        @id @default(cuid())
+  title         String
+  content       String
+  postType      String        @default("POST")
+  imageUrl      String?
+  videoUrl      String?
+  eventStartsAt DateTime?
+  eventEndsAt   DateTime?
+  eventLocation String?
+  eventCity     String?
+  eventState    String?
+  channelId     String?
+  channel       ForumChannel? @relation(fields: [channelId], references: [id])
+  isPinned      Boolean       @default(false)
+  authorId      String
+  author        User          @relation("UserForumThreads", fields: [authorId], references: [id])
+  replies       ForumReply[]
+  reactions     ForumThreadReaction[]
+  posts         ForumPost[]   // <-- ADICIONE ESTA LINHA
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 }
 
 model ForumReply {
-  id        String   @id @default(cuid())
+  id        String      @id @default(cuid())
   content   String
   authorId  String
-  author    User     @relation("UserForumReplies", fields: [authorId], references: [id])
+  author    User        @relation("UserForumReplies", fields: [authorId], references: [id])
   threadId  String
   thread    ForumThread @relation(fields: [threadId], references: [id])
-  createdAt DateTime @default(now())
+  createdAt DateTime    @default(now())
 }
 
 model VerificationCode {
@@ -152,4 +320,38 @@ model VerificationCode {
   code      String
   expiresAt DateTime
   createdAt DateTime @default(now())
+}
+
+model BlogComment {
+  id        String   @id @default(cuid())
+  content   String
+  authorId  String
+  author    User     @relation("UserBlogComments", fields: [authorId], references: [id])
+  postId    String
+  post      BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model BlogPostReaction {
+  id        String   @id @default(cuid())
+  type      String   @default("LIKE")
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId    String
+  post      BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
+}
+
+model ForumThreadReaction {
+  id        String      @id @default(cuid())
+  type      String      @default("LIKE")
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  threadId  String
+  thread    ForumThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  createdAt DateTime    @default(now())
+
+  @@unique([threadId, userId])
 }

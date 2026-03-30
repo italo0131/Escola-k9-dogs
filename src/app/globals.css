@@ -14,6 +14,10 @@
   --root-border: rgba(251, 146, 60, 0.25);
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   background: #020617;
   color: #e2e8f0;
@@ -55,6 +59,101 @@ body {
   transition: background 200ms ease, border-color 200ms ease;
 }
 
+.bg-k9-aurora-warm {
+  background:
+    radial-gradient(circle at top, rgba(34, 211, 238, 0.1), transparent 24%),
+    radial-gradient(circle at 80% 20%, rgba(251, 191, 36, 0.1), transparent 28%),
+    linear-gradient(160deg, #020617, #0f172a 55%, #111827);
+}
+
+.skip-link {
+  position: fixed;
+  left: 1rem;
+  top: 1rem;
+  z-index: 140;
+  transform: translateY(-140%);
+  border-radius: 999px;
+  border: 1px solid rgba(103, 232, 249, 0.4);
+  background: rgba(8, 47, 73, 0.94);
+  color: #ecfeff;
+  padding: 0.7rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: transform 160ms ease;
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
+}
+
+.surface-card {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.04));
+  box-shadow: 0 22px 44px rgba(2, 6, 23, 0.22);
+  backdrop-filter: blur(18px);
+}
+
+.interactive-card {
+  transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease, background-color 220ms ease;
+}
+
+.interactive-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(103, 232, 249, 0.22);
+  box-shadow: 0 26px 52px rgba(8, 47, 73, 0.24);
+}
+
+.interactive-button {
+  transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease, border-color 180ms ease;
+}
+
+.interactive-button:hover {
+  transform: translateY(-1px);
+}
+
+.fade-in-up {
+  animation: fade-in-up 500ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.fade-in-soft {
+  animation: fade-in-soft 420ms ease both;
+}
+
+.toast-enter {
+  animation: toast-enter 280ms ease both;
+}
+
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1rem;
+  background: rgba(148, 163, 184, 0.14);
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.18), transparent);
+  animation: shimmer 1.5s infinite;
+}
+
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 3px solid rgba(34, 211, 238, 0.72);
+  outline-offset: 3px;
+}
+
+:where(a, button, [role="button"]) {
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(56, 189, 248, 0.25);
+}
+
+:where(input, select, textarea) {
+  touch-action: manipulation;
+}
+
 @supports (padding: env(safe-area-inset-top)) {
   .app-nav,
   .app-banner {
@@ -83,16 +182,6 @@ body {
   letter-spacing: 0.15em;
 }
 
-:where(a, button, [role="button"]) {
-  cursor: pointer;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: rgba(56, 189, 248, 0.25);
-}
-
-:where(input, select, textarea) {
-  touch-action: manipulation;
-}
-
 @media (pointer: coarse) {
   :where(a, button, [role="button"], input, select, textarea) {
     min-height: 44px;
@@ -100,8 +189,62 @@ body {
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 :root.root-mode .app-bg {
   background: radial-gradient(circle at 10% 20%, rgba(251, 146, 60, 0.2), transparent 30%),
     radial-gradient(circle at 80% 10%, rgba(251, 191, 36, 0.2), transparent 30%),
     radial-gradient(circle at 40% 80%, rgba(14, 116, 144, 0.15), transparent 30%);
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fade-in-soft {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes toast-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }

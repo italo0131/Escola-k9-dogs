@@ -1,0 +1,107 @@
+{
+  "sorted_middleware": [],
+  "middleware": {
+    "/": {
+      "files": [
+        "server/edge/chunks/node_modules_next_dist_esm_build_templates_edge-wrapper_3b93bb62.js",
+        "server/edge/chunks/[root-of-the-server]__0ab4726b._.js",
+        "server/edge/chunks/turbopack-node_modules_next_dist_esm_build_templates_edge-wrapper_4ed52b75.js"
+      ],
+      "name": "middleware",
+      "page": "/",
+      "matchers": [
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/admin/:path*{(\\\\.json)}?",
+          "originalSource": "/admin/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/dashboard/:path*{(\\\\.json)}?",
+          "originalSource": "/dashboard/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/billing/:path*{(\\\\.json)}?",
+          "originalSource": "/billing/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/calendar/:path*{(\\\\.json)}?",
+          "originalSource": "/calendar/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/conteudos/:path*{(\\\\.json)}?",
+          "originalSource": "/conteudos/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/dogs/:path*{(\\\\.json)}?",
+          "originalSource": "/dogs/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/forum/:path*{(\\\\.json)}?",
+          "originalSource": "/forum/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/profile/:path*{(\\\\.json)}?",
+          "originalSource": "/profile/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/training/:path*{(\\\\.json)}?",
+          "originalSource": "/training/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/verify/:path*{(\\\\.json)}?",
+          "originalSource": "/verify/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/api/admin/:path*{(\\\\.json)}?",
+          "originalSource": "/api/admin/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/api/billing/:path*{(\\\\.json)}?",
+          "originalSource": "/api/billing/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/api/content/:path*{(\\\\.json)}?",
+          "originalSource": "/api/content/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/api/dogs/:path*{(\\\\.json)}?",
+          "originalSource": "/api/dogs/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/api/forum/:path*{(\\\\.json)}?",
+          "originalSource": "/api/forum/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/api/profile/:path*{(\\\\.json)}?",
+          "originalSource": "/api/profile/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/api/schedule/:path*{(\\\\.json)}?",
+          "originalSource": "/api/schedule/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/api/training/:path*{(\\\\.json)}?",
+          "originalSource": "/api/training/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/api/verify/:path*{(\\\\.json)}?",
+          "originalSource": "/api/verify/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/blog/new/:path*{(\\\\.json)}?",
+          "originalSource": "/blog/new/:path*"
+        }
+      ],
+      "wasm": [],
+      "assets": [],
+      "env": {
+        "__NEXT_BUILD_ID": "voDYvDQ9ijdJ50kcDzmF1",
+        "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY": "1CUx17bnhZ1ZL03wYJIhCZgkpyGesFm3vA91Q+0mxY8=",
+        "__NEXT_PREVIEW_MODE_ID": "69eb1ddd85ef44d780437110b12ed618",
+        "__NEXT_PREVIEW_MODE_ENCRYPTION_KEY": "b56ebe42277921d6e50f0831113bb5f2468810d72781e659e4cb057697681065",
+        "__NEXT_PREVIEW_MODE_SIGNING_KEY": "a26efe3ea9250995ddd57555028ca4a5f3da958c8bae862afff2dee935ba8955"
+      }
+    }
+  },
+  "instrumentation": null,
+  "functions": {}
+}

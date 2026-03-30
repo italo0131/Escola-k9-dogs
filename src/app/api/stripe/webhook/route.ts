@@ -31,6 +31,7 @@ export async function POST(req: Request) {
   const customerEmail = data.customer_email || data.customer_details?.email || null
   const customerId = data.customer || null
   const metadataUserId = data.metadata?.userId || null
+  const metadataPlan = String(data.metadata?.plan || "").toUpperCase() || null
 
   let userId: string | null = null
   if (metadataUserId) {
@@ -65,6 +66,38 @@ export async function POST(req: Request) {
         raw: JSON.stringify(event),
       },
     })
+
+    if (userId) {
+      if (type === "checkout.session.completed") {
+        await prisma.user.update({
+          where: { id: userId },
+          data: {
+            plan: metadataPlan || "STARTER",
+            planStatus: "ACTIVE",
+            planActivatedAt: new Date(),
+          },
+        })
+      }
+
+      if (type === "invoice.payment_failed") {
+        await prisma.user.update({
+          where: { id: userId },
+          data: {
+            planStatus: "PAST_DUE",
+          },
+        })
+      }
+
+      if (type === "customer.subscription.deleted") {
+        await prisma.user.update({
+          where: { id: userId },
+          data: {
+            plan: "FREE",
+            planStatus: "ACTIVE",
+          },
+        })
+      }
+    }
   } catch (err) {
     console.error("Erro ao salvar evento Stripe:", err)
     return NextResponse.json({ success: false, message: "Erro ao salvar evento" }, { status: 500 })

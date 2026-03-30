@@ -20,6 +20,11 @@ WORKDIR /app
 
 COPY --from=builder /app ./
 
+ENV NODE_ENV=production
+ENV HOSTNAME=0.0.0.0
+ENV PORT=3000
+
 EXPOSE 3000
 
-CMD ["sh", "-c", "npx prisma migrate deploy && npm start"]
+RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+CMD ["sh", "-c", "npx prisma db push 2>&1 | tee /proc/1/fd/1 && npm start"]

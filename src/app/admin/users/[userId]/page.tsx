@@ -4,16 +4,17 @@ import { requireUser } from "@/lib/auth"
 import { isRootRole } from "@/lib/role"
 import { redirect } from "next/navigation"
 
-type Props = { params: { userId: string } }
+type Props = { params: Promise<{ userId: string }> }
 
 export default async function AdminUserDetailPage({ params }: Props) {
+  const { userId } = await params
   const session = await requireUser()
   if (!isRootRole(session.user.role)) {
     redirect("/dashboard")
   }
 
   const user = await prisma.user.findUnique({
-    where: { id: params.userId },
+    where: { id: userId },
     include: {
       dogs: true,
       schedules: true,

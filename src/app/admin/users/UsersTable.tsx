@@ -112,6 +112,7 @@ export default function UsersTable({ initialUsers }: { initialUsers: UserRow[] }
             <option value="all">Todos os papeis</option>
             <option value="CLIENT">CLIENT</option>
             <option value="TRAINER">TRAINER</option>
+            <option value="VET">VET</option>
             <option value="ADMIN">ADMIN</option>
             <option value="ROOT">ROOT</option>
             <option value="SUPERADMIN">SUPERADMIN</option>
@@ -126,6 +127,7 @@ export default function UsersTable({ initialUsers }: { initialUsers: UserRow[] }
           >
             <option value="all">Todos os status</option>
             <option value="ACTIVE">ACTIVE</option>
+            <option value="PENDING_APPROVAL">PENDING_APPROVAL</option>
             <option value="SUSPENDED">SUSPENDED</option>
           </select>
         </div>
@@ -168,6 +170,7 @@ export default function UsersTable({ initialUsers }: { initialUsers: UserRow[] }
                     >
                       <option value="CLIENT">CLIENT</option>
                       <option value="TRAINER">TRAINER</option>
+                      <option value="VET">VET</option>
                       <option value="ADMIN">ADMIN</option>
                       <option value="ROOT">ROOT</option>
                       <option value="SUPERADMIN">SUPERADMIN</option>
@@ -184,6 +187,7 @@ export default function UsersTable({ initialUsers }: { initialUsers: UserRow[] }
                       className="rounded-lg border border-white/10 bg-white/10 px-2 py-2 text-white text-xs"
                     >
                       <option value="ACTIVE">ACTIVE</option>
+                      <option value="PENDING_APPROVAL">PENDING_APPROVAL</option>
                       <option value="SUSPENDED">SUSPENDED</option>
                     </select>
                   </td>

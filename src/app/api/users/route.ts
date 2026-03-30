@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
 import { randomBytes, scryptSync } from "crypto"
-import { requireApiAdmin } from "../_auth"
+import { requireApiAdmin, requireApiStaff } from "../_auth"
+import { isAdminRole } from "@/lib/role"
 
 function hashPassword(password: string) {
   const salt = randomBytes(16).toString("hex")
@@ -9,11 +10,16 @@ function hashPassword(password: string) {
   return `scrypt:${salt}:${derived}`
 }
 
+function normalizeEmail(email: string) {
+  return email.trim().toLowerCase()
+}
+
 export async function GET() {
-  const { error } = await requireApiAdmin()
+  const { session, error } = await requireApiStaff()
   if (error) return error
 
   const users = await prisma.user.findMany({
+    where: isAdminRole(session.user.role) ? {} : { role: "CLIENT" },
     select: {
       id: true,
       name: true,
@@ -47,7 +53,7 @@ export async function POST(req: Request) {
     const user = await prisma.user.create({
       data: {
         name: data.name,
-        email: data.email,
+        email: normalizeEmail(data.email),
         password: hashPassword(data.password),
       },
     })

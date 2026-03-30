@@ -4,9 +4,16 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile
+    env_file:
+      - .env
     environment:
       NODE_ENV: development
+      DATABASE_URL: postgresql://devStartp:1533@db:5432/devStartp?schema=public
+      NEXTAUTH_URL: http://localhost:3000
+      AUTH_TRUST_HOST: "true"
     ports:
       - 3000:3000
       - 9229:9229
-    command: ["node", "--inspect=0.0.0.0:9229", "index.js"]
+    volumes:
+      - .:/app
+    command: ["npm", "run", "dev", "--", "--hostname", "0.0.0.0"]

@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "functions": {
+    "/api/ai/breed-consultant": {},
+    "/api/ai/coach": {},
+    "/api/breed-ai/advice": {},
+    "/api/dogs/recognize-breed": {},
+    "/api/upload/image": {},
+    "/api/upload/video": {}
+  }
+}

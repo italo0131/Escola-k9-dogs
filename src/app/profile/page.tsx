@@ -1,24 +1,25 @@
-﻿import { prisma } from "@/lib/prisma"
+import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import { requireUser } from "@/lib/auth"
-
-type DogProgress = {
-  id: string
-  name: string
-  progress: number
-  sessions: number
-  delta: number
-  history: number[]
-  breed: string
-  age: number
-}
+import { getRoleLabel, getUserStatusLabel, isProfessionalRole, needsProfessionalApproval } from "@/lib/role"
+import { getAccountPlanLabel } from "@/lib/platform"
 
 export default async function ProfilePage() {
   const session = await requireUser()
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    include: { dogs: { include: { trainings: true } } },
+    include: {
+      dogs: { include: { trainings: true }, orderBy: { createdAt: "desc" } },
+      forumChannels: { include: { _count: { select: { subscriptions: true, contents: true, threads: true } } } },
+      channelSubscriptions: {
+        where: { status: "ACTIVE" },
+        include: { channel: { include: { owner: true } } },
+        orderBy: { startedAt: "desc" },
+      },
+      blogPosts: { orderBy: { createdAt: "desc" }, take: 4 },
+      channelContents: { orderBy: { createdAt: "desc" }, take: 4, include: { channel: true } },
+    },
   })
 
   if (!user) {
@@ -38,231 +39,290 @@ export default async function ProfilePage() {
     )
   }
 
-  const [trainingsCount, schedulesCount, recentTrainings, paymentAgg, lastPayment, paymentCount] = await Promise.all([
+  const [trainingsCount, schedulesCount, activeChannelsCount, totalPayments] = await Promise.all([
     prisma.trainingSession.count({
       where: { dog: { ownerId: user.id } },
     }),
     prisma.schedule.count({
       where: { userId: user.id },
     }),
-    prisma.trainingSession.findMany({
-      where: { dog: { ownerId: user.id } },
-      orderBy: { createdAt: "desc" },
-      take: 6,
-      include: { dog: true },
+    prisma.channelSubscription.count({
+      where: { userId: user.id, status: "ACTIVE" },
     }),
     prisma.payment.aggregate({
       where: { userId: user.id },
       _sum: { amount: true },
     }),
-    prisma.payment.findFirst({
-      where: { userId: user.id },
-      orderBy: { createdAt: "desc" },
-    }),
-    prisma.payment.count({
-      where: { userId: user.id },
-    }),
   ])
 
-  const progressByDog: DogProgress[] = user.dogs.map((dog) => {
-    const sessions = (dog.trainings || []).slice().sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+  const progressByDog = user.dogs.map((dog) => {
+    const sessions = (dog.trainings || []).slice().sort((a, b) => a.executedAt.getTime() - b.executedAt.getTime())
     const avg = sessions.length
       ? Math.round(sessions.reduce((sum, t) => sum + t.progress, 0) / sessions.length)
       : 0
     const first = sessions[0]
     const last = sessions[sessions.length - 1]
     const delta = first && last ? last.progress - first.progress : 0
-    const history = sessions.slice(-6).map((t) => t.progress)
     return {
       id: dog.id,
       name: dog.name,
-      progress: avg,
-      sessions: sessions.length,
-      delta,
-      history,
       breed: dog.breed,
-      age: dog.age,
+      progress: avg,
+      delta,
+      sessions: sessions.length,
     }
   })
-
-  const totalPaid = paymentAgg._sum.amount || 0
-  const subscriptionStatus = lastPayment?.status || "sem eventos"
+  const pendingProfessionalApproval = needsProfessionalApproval(user.role, user.status)
 
   return (
-    <div className="min-h-[100svh] bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 px-4 sm:px-6 py-10 text-white">
-      <div className="max-w-5xl mx-auto space-y-6">
-        <div className="flex flex-col gap-2">
-          <p className="text-sm uppercase tracking-[0.2em] text-cyan-200/80">Perfil</p>
-          <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-semibold">Ola, {user.name}</h1>
-            <Link
-              href="/profile/edit"
-              className="rounded-lg bg-cyan-500 px-4 py-2 text-white font-semibold hover:-translate-y-0.5 transition shadow-lg shadow-cyan-500/25"
-            >
-              Editar perfil
-            </Link>
-          </div>
-          <p className="text-gray-300/80">Gerencie seus dados e os caes associados.</p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-5 shadow-lg shadow-black/30">
-            <p className="text-gray-300 text-sm">Nome</p>
-            <p className="text-xl font-semibold">{user.name}</p>
-          </div>
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-5 shadow-lg shadow-black/30">
-            <p className="text-gray-300 text-sm">Email</p>
-            <p className="text-xl font-semibold break-words">{user.email}</p>
-          </div>
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-5 shadow-lg shadow-black/30">
-            <p className="text-gray-300 text-sm">Caes cadastrados</p>
-            <p className="text-3xl font-semibold">{user.dogs.length}</p>
-          </div>
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-5 shadow-lg shadow-black/30">
-            <p className="text-gray-300 text-sm">Treinos</p>
-            <p className="text-3xl font-semibold">{trainingsCount}</p>
-          </div>
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-5 shadow-lg shadow-black/30">
-            <p className="text-gray-300 text-sm">Agendamentos</p>
-            <p className="text-3xl font-semibold">{schedulesCount}</p>
-          </div>
-        </div>
-
-        <section className="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-lg shadow-black/30">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">Plano e assinatura</h2>
-            <Link href="/billing" className="text-cyan-300 text-sm hover:underline underline-offset-4">
-              Gerenciar assinatura
-            </Link>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-              <p className="text-sm text-gray-300">Status atual</p>
-              <p className="text-2xl font-semibold mt-1">{subscriptionStatus}</p>
-              <p className="text-xs text-gray-400 mt-2">Ultimo evento: {lastPayment ? lastPayment.type : "nenhum"}</p>
+    <div className="min-h-[100svh] bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.12),transparent_24%),linear-gradient(145deg,#020617,#0f172a_55%,#020617)] px-4 py-10 text-white sm:px-6">
+      <div className="mx-auto max-w-6xl space-y-6">
+        <section className="rounded-[32px] border border-white/10 bg-[linear-gradient(135deg,rgba(15,23,42,0.96),rgba(15,23,42,0.74)),radial-gradient(circle_at_top_right,rgba(16,185,129,0.18),transparent_30%)] p-8 shadow-2xl">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <div className="space-y-3">
+              <p className="text-sm uppercase tracking-[0.2em] text-cyan-200/80">Perfil</p>
+              <h1 className="text-3xl font-semibold md:text-4xl">{user.name}</h1>
+              <p className="max-w-2xl text-slate-300">
+                {user.headline || `${getRoleLabel(user.role)} com foco em rotina disciplinada, evolucao visivel e comunidade.`}
+              </p>
+              <div className="flex flex-wrap gap-2 text-xs">
+                <span className="rounded-full bg-white/10 px-3 py-1 text-gray-100">{getRoleLabel(user.role)}</span>
+                <span className="rounded-full bg-cyan-500/15 px-3 py-1 text-cyan-100">{getAccountPlanLabel(user.plan)}</span>
+                <span className={`rounded-full px-3 py-1 ${pendingProfessionalApproval ? "bg-amber-500/15 text-amber-100" : "bg-emerald-500/15 text-emerald-100"}`}>
+                  {getUserStatusLabel(user.status, user.role)}
+                </span>
+                <span className={`rounded-full px-3 py-1 ${user.emailVerifiedAt ? "bg-emerald-500/15 text-emerald-100" : "bg-amber-500/15 text-amber-100"}`}>
+                  {user.emailVerifiedAt ? "Email confirmado" : "Email pendente"}
+                </span>
+              </div>
             </div>
-            <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-              <p className="text-sm text-gray-300">Total pago (centavos)</p>
-              <p className="text-2xl font-semibold mt-1">{totalPaid}</p>
-              <p className="text-xs text-gray-400 mt-2">Eventos: {paymentCount}</p>
+
+            <div className="flex flex-wrap gap-3">
+              {!user.emailVerifiedAt && (
+                <Link
+                  href="/verify"
+                  className="rounded-2xl border border-amber-300/20 bg-amber-500/10 px-4 py-3 text-sm font-medium text-amber-50"
+                >
+                  Confirmar email
+                </Link>
+              )}
+              <Link
+                href="/profile/edit"
+                className="rounded-2xl bg-[linear-gradient(135deg,#06b6d4,#10b981)] px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-cyan-500/20"
+              >
+                Editar perfil
+              </Link>
+            </div>
+          </div>
+
+          <div className="mt-8 grid gap-4 md:grid-cols-4">
+            <Metric title="Caes" value={String(user.dogs.length)} description="Base de acompanhamento individual" />
+            <Metric title="Treinos" value={String(trainingsCount)} description="Historico consolidado da evolucao" />
+            <Metric title="Agenda" value={String(schedulesCount)} description="Compromissos organizados no calendario" />
+            <Metric title="Canais ativos" value={String(activeChannelsCount)} description="Assinaturas conectadas ao seu feed" />
+          </div>
+        </section>
+
+        {pendingProfessionalApproval ? (
+          <section className="rounded-[28px] border border-amber-300/20 bg-amber-500/10 p-6 text-amber-50 shadow-lg shadow-black/20">
+            <p className="text-sm uppercase tracking-[0.2em] text-amber-100/80">Analise profissional</p>
+            <h2 className="mt-2 text-2xl font-semibold">Seu perfil ainda esta em validacao</h2>
+            <p className="mt-3 max-w-3xl text-sm leading-7">
+              Enquanto a equipe revisa seus dados, sua conta continua ativa para navegar na plataforma, mas canal,
+              conteudo exclusivo e publicacoes como profissional ficam bloqueados.
+            </p>
+          </section>
+        ) : null}
+
+        <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+          <div className="rounded-[28px] border border-white/10 bg-white/6 p-6 shadow-lg shadow-black/30">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-2xl font-semibold">Identidade e disciplina</h2>
+              <Link href="/billing" className="text-sm text-cyan-300 hover:underline underline-offset-4">
+                Gerenciar assinatura
+              </Link>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <ProfileBlock title="Email" value={user.email} />
+              <ProfileBlock title="Telefone" value={user.phone || "Nao informado"} />
+              <ProfileBlock title="Cidade" value={[user.city, user.state].filter(Boolean).join(" / ") || "Nao informado"} />
+              <ProfileBlock title="Experiencia" value={user.experienceYears ? `${user.experienceYears} anos` : "Em construcao"} />
+              <ProfileBlock title="Especialidades" value={user.specialties || "Nao informado"} />
+              <ProfileBlock title="Instagram" value={user.instagramHandle || "Nao informado"} />
+            </div>
+
+            {user.bio && (
+              <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-5">
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Bio</p>
+                <p className="mt-3 whitespace-pre-wrap text-slate-100 leading-7">{user.bio}</p>
+              </div>
+            )}
+
+            {user.availabilityNotes && (
+              <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-5">
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Rotina e disponibilidade</p>
+                <p className="mt-3 whitespace-pre-wrap text-slate-100 leading-7">{user.availabilityNotes}</p>
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-4">
+            <div className="rounded-[28px] border border-white/10 bg-white/6 p-6 shadow-lg shadow-black/30">
+              <h2 className="text-2xl font-semibold">Financeiro e plano</h2>
+              <div className="mt-4 grid gap-4">
+                <ProfileBlock title="Plano atual" value={getAccountPlanLabel(user.plan)} />
+                <ProfileBlock title="Status do plano" value={user.planStatus || "ACTIVE"} />
+                <ProfileBlock title="Receita registrada" value={`R$ ${((totalPayments._sum.amount || 0) / 100).toFixed(2)}`} />
+              </div>
+            </div>
+
+            <div className="rounded-[28px] border border-white/10 bg-white/6 p-6 shadow-lg shadow-black/30">
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-2xl font-semibold">Publicacao</h2>
+                <Link href="/blog/new" className="text-sm text-cyan-300 hover:underline underline-offset-4">
+                  Novo post
+                </Link>
+              </div>
+              <div className="space-y-3">
+                {user.blogPosts.map((post) => (
+                  <Link
+                    key={post.id}
+                    href={`/blog/${post.slug}`}
+                    className="block rounded-2xl border border-white/10 bg-white/5 p-4 transition hover:bg-white/10"
+                  >
+                    <p className="font-semibold">{post.title}</p>
+                    <p className="mt-1 text-sm text-slate-300">{post.category}</p>
+                  </Link>
+                ))}
+                {user.blogPosts.length === 0 && <p className="text-sm text-slate-300">Nenhum post publicado ainda.</p>}
+              </div>
             </div>
           </div>
         </section>
 
-        <section className="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-lg shadow-black/30 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold">Evolucao e progresso</h2>
-            <span className="text-xs text-gray-300">Media por cao</span>
-          </div>
-          {progressByDog.length === 0 && <p className="text-gray-300">Nenhum treino registrado.</p>}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {progressByDog.map((dog) => {
-              const history =
-                dog.history.length < 6
-                  ? Array(6 - dog.history.length).fill(0).concat(dog.history)
-                  : dog.history
-              const deltaLabel = dog.delta === 0 ? "0%" : `${dog.delta > 0 ? "+" : ""}${dog.delta}%`
-              return (
+        {isProfessionalRole(user.role) && (
+          <section className="rounded-[28px] border border-white/10 bg-white/6 p-6 shadow-lg shadow-black/30">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-2xl font-semibold">Canais e conteudos</h2>
+              <Link href="/conteudos/new" className="text-sm text-cyan-300 hover:underline underline-offset-4">
+                Novo conteudo
+              </Link>
+            </div>
+
+            <div className="grid gap-4 lg:grid-cols-2">
+              {user.forumChannels.map((channel) => (
+                <Link
+                  key={channel.id}
+                  href={`/forum/channels/${channel.slug}`}
+                  className="rounded-2xl border border-white/10 bg-white/5 p-5 transition hover:bg-white/10"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-lg font-semibold">{channel.name}</p>
+                    <span className="text-xs text-slate-400">{channel._count.subscriptions} assinantes</span>
+                  </div>
+                  <p className="mt-2 text-sm text-slate-300">{channel.description}</p>
+                  <p className="mt-3 text-xs text-slate-400">
+                    {channel._count.contents} conteudos • {channel._count.threads} topicos
+                  </p>
+                </Link>
+              ))}
+              {user.forumChannels.length === 0 && <p className="text-sm text-slate-300">Nenhum canal criado ainda.</p>}
+            </div>
+
+            <div className="mt-6 grid gap-4 md:grid-cols-2">
+              {user.channelContents.map((content) => (
+                <Link
+                  key={content.id}
+                  href={`/conteudos/${content.slug}`}
+                  className="rounded-2xl border border-white/10 bg-white/5 p-4 transition hover:bg-white/10"
+                >
+                  <p className="font-semibold">{content.title}</p>
+                  <p className="mt-1 text-sm text-slate-300">{content.channel.name}</p>
+                </Link>
+              ))}
+              {user.channelContents.length === 0 && <p className="text-sm text-slate-300">Nenhum conteudo de canal publicado ainda.</p>}
+            </div>
+          </section>
+        )}
+
+        <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+          <div className="rounded-[28px] border border-white/10 bg-white/6 p-6 shadow-lg shadow-black/30">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-2xl font-semibold">Progresso dos caes</h2>
+              <Link href="/dogs" className="text-sm text-cyan-300 hover:underline underline-offset-4">
+                Ver caes
+              </Link>
+            </div>
+
+            <div className="space-y-3">
+              {progressByDog.map((dog) => (
                 <Link
                   key={dog.id}
                   href={`/training?dog=${dog.id}`}
-                  className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-3 hover:bg-white/10 transition"
+                  className="block rounded-2xl border border-white/10 bg-white/5 p-4 transition hover:bg-white/10"
                 >
-                  <div className="flex items-start justify-between">
+                  <div className="flex items-center justify-between gap-3">
                     <div>
                       <p className="text-lg font-semibold">{dog.name}</p>
-                      <p className="text-xs text-gray-400">Raca: {dog.breed} • Idade: {dog.age}</p>
+                      <p className="text-xs text-slate-400">{dog.breed}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-2xl font-semibold text-cyan-300">{dog.progress}%</p>
-                      <p className={`text-xs ${dog.delta >= 0 ? "text-emerald-300" : "text-rose-300"}`}>
-                        Evolucao: {deltaLabel}
+                      <p className="text-xl font-semibold text-cyan-200">{dog.progress}%</p>
+                      <p className={`text-xs ${dog.delta >= 0 ? "text-emerald-200" : "text-rose-200"}`}>
+                        {dog.delta >= 0 ? "+" : ""}
+                        {dog.delta}% evolucao
                       </p>
                     </div>
                   </div>
-                  <div>
-                    <div className="flex justify-between text-xs text-gray-400">
-                      <span>Sessoes: {dog.sessions}</span>
-                      <span>Ultimos treinos</span>
-                    </div>
-                    <div className="mt-2 h-2 rounded-full bg-white/10 overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-cyan-400 to-emerald-400"
-                        style={{ width: `${dog.progress}%` }}
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-6 gap-1 h-12 items-end">
-                    {history.map((value, index) => (
-                      <div key={`${dog.id}-${index}`} className="rounded-md bg-white/10 h-full flex items-end">
-                        <div
-                          className="w-full rounded-md bg-gradient-to-t from-cyan-400 to-emerald-400"
-                          style={{ height: `${Math.max(10, value)}%` }}
-                        />
-                      </div>
-                    ))}
-                  </div>
                 </Link>
-              )
-            })}
+              ))}
+              {progressByDog.length === 0 && <p className="text-sm text-slate-300">Nenhum treino consolidado ainda.</p>}
+            </div>
           </div>
-        </section>
 
-        <section className="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-lg shadow-black/30">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">Ultimas sessoes</h2>
-            <Link href="/training" className="text-cyan-300 text-sm hover:underline underline-offset-4">
-              Ver treinos
-            </Link>
-          </div>
-          {recentTrainings.length === 0 && <p className="text-gray-300">Nenhuma sessao registrada.</p>}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {recentTrainings.map((training) => (
-              <Link
-                key={training.id}
-                href={training.dog?.id ? `/training?dog=${training.dog.id}` : "/training"}
-                className="rounded-xl border border-white/10 bg-white/5 p-4 hover:bg-white/10 transition"
-              >
-                <p className="text-sm text-gray-400">
-                  {new Date(training.createdAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
-                </p>
-                <p className="text-lg font-semibold mt-1">{training.title}</p>
-                <p className="text-sm text-gray-300">{training.description}</p>
-                <p className="text-xs text-gray-400 mt-2">Cao: {training.dog?.name || "-"}</p>
-                <div className="mt-2 h-2 rounded-full bg-white/10 overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-cyan-400 to-emerald-400"
-                    style={{ width: `${training.progress}%` }}
-                  />
-                </div>
+          <div className="rounded-[28px] border border-white/10 bg-white/6 p-6 shadow-lg shadow-black/30">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-2xl font-semibold">Canais assinados</h2>
+              <Link href="/forum" className="text-sm text-cyan-300 hover:underline underline-offset-4">
+                Explorar
               </Link>
-            ))}
-          </div>
-        </section>
-
-        <section className="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-lg shadow-black/30">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">Meus caes</h2>
-            <Link href="/dogs/new" className="text-cyan-300 hover:text-cyan-200 underline-offset-4 hover:underline">
-              Adicionar cao
-            </Link>
-          </div>
-          {user.dogs.length === 0 && <p className="text-gray-300">Nenhum cao cadastrado.</p>}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {user.dogs.map((dog) => (
-              <Link
-                key={dog.id}
-                href={`/training?dog=${dog.id}`}
-                className="rounded-xl border border-white/10 bg-white/5 p-4 hover:bg-white/10 transition"
-              >
-                <p className="text-lg font-semibold">{dog.name}</p>
-                <p className="text-gray-300">Raca: {dog.breed}</p>
-                <p className="text-gray-300">Idade: {dog.age} anos</p>
-              </Link>
-            ))}
+            </div>
+            <div className="space-y-3">
+              {user.channelSubscriptions.map((subscription) => (
+                <Link
+                  key={subscription.id}
+                  href={`/forum/channels/${subscription.channel.slug}`}
+                  className="block rounded-2xl border border-white/10 bg-white/5 p-4 transition hover:bg-white/10"
+                >
+                  <p className="font-semibold">{subscription.channel.name}</p>
+                  <p className="mt-1 text-sm text-slate-300">{subscription.channel.owner.name}</p>
+                </Link>
+              ))}
+              {user.channelSubscriptions.length === 0 && <p className="text-sm text-slate-300">Nenhum canal assinado ainda.</p>}
+            </div>
           </div>
         </section>
       </div>
+    </div>
+  )
+}
+
+function Metric({ title, value, description }: { title: string; value: string; description: string }) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+      <p className="text-xs uppercase tracking-[0.2em] text-slate-400">{title}</p>
+      <p className="mt-3 text-2xl font-semibold">{value}</p>
+      <p className="mt-2 text-sm text-slate-300">{description}</p>
+    </div>
+  )
+}
+
+function ProfileBlock({ title, value }: { title: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+      <p className="text-xs uppercase tracking-[0.2em] text-slate-400">{title}</p>
+      <p className="mt-2 text-sm text-white">{value}</p>
     </div>
   )
 }

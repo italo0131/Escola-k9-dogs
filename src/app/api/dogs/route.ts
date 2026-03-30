@@ -1,14 +1,16 @@
 import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
-import { isAdminRole } from "@/lib/role"
+import { isStaffRole } from "@/lib/role"
 import { requireApiUser } from "../_auth"
+import { buildDogPayload } from "@/lib/dog-profile"
+import { getDogLimit } from "@/lib/platform"
 
 export async function GET() {
   const { session, error } = await requireApiUser()
   if (error) return error
 
   try {
-    const where = isAdminRole(session.user.role) ? {} : { ownerId: session.user.id }
+    const where = isStaffRole(session.user.role) ? {} : { ownerId: session.user.id }
 
     const dogs = await prisma.dog.findMany({
       where,
@@ -34,21 +36,30 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, message: "Campos obrigatórios faltando" }, { status: 400 })
     }
 
-    const ownerId = isAdminRole(session.user.role) && data.ownerId ? data.ownerId : session.user.id
+    const ownerId = isStaffRole(session.user.role) && data.ownerId ? data.ownerId : session.user.id
 
-    // se não for admin, garanta que ownerId é o próprio usuário
-    if (!isAdminRole(session.user.role) && data.ownerId && data.ownerId !== session.user.id) {
+    if (!isStaffRole(session.user.role) && data.ownerId && data.ownerId !== session.user.id) {
       return NextResponse.json({ success: false, message: "Sem permissão para atribuir outro tutor" }, { status: 403 })
     }
 
-    const dog = await prisma.dog.create({
-      data: {
-        name: data.name,
-        breed: data.breed,
-        age: Number(data.age),
-        ownerId,
-      },
-    })
+    if (!isStaffRole(session.user.role)) {
+      const currentDogs = await prisma.dog.count({ where: { ownerId } })
+      const limit = getDogLimit(session.user.plan, session.user.role, session.user.planStatus)
+      if (Number.isFinite(limit) && currentDogs >= limit) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: `O plano Free permite ate ${limit} caes. Para cadastrar mais, atualize sua assinatura.`,
+          },
+          { status: 403 }
+        )
+      }
+    }
+
+    const payload = buildDogPayload(data, ownerId)
+    const dog = await prisma.dog.create({ data: payload })
+
+
 
     return NextResponse.json({ success: true, dog }, { status: 201 })
   } catch (error) {

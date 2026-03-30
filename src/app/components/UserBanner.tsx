@@ -1,51 +1,40 @@
 "use client"
 
-import { useEffect } from "react"
-import { useSession } from "next-auth/react"
-import { isRootRole } from "@/lib/role"
+import Link from "next/link"
+
+import { usePlatformSession } from "@/app/components/PlatformSessionProvider"
+import { getAccountPlanLabel } from "@/lib/platform"
+import { getRoleLabel, isRootRole } from "@/lib/role"
 
 export default function UserBanner() {
-  const { data } = useSession()
-  const role = data?.user?.role || ""
+  const { session, role, plan, emailVerified, isLoggedIn } = usePlatformSession()
   const isRoot = isRootRole(role)
 
-  useEffect(() => {
-    const html = document.documentElement
-    if (!role) {
-      html.classList.remove("root-mode")
-      delete html.dataset.role
-      return
-    }
-    html.dataset.role = String(role).toLowerCase()
-    if (isRoot) {
-      html.classList.add("root-mode")
-    } else {
-      html.classList.remove("root-mode")
-    }
-  }, [role, isRoot])
-
-  if (!data?.user) return null
+  if (!isLoggedIn || !session?.user) return null
 
   return (
-    <div className="app-banner border-b text-xs md:text-sm text-gray-200">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 py-2 flex flex-wrap items-center gap-2 md:gap-3">
+    <div className="app-banner border-b text-xs text-gray-200 md:text-sm">
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-2 px-4 py-2 sm:px-6 md:gap-3">
         <span>
-          Logado como: <strong>{data.user.name || data.user.email}</strong>
+          Ola, <strong>{session.user.name || session.user.email}</strong>
         </span>
-        <span className="text-gray-400">â€¢</span>
+        <span className="text-gray-400">|</span>
         <span>
-          Perfil: <strong>{data.user.role || "CLIENT"}</strong>
+          Perfil: <strong>{getRoleLabel(role)}</strong>
         </span>
-        {isRoot && <span className="root-pill">Controle total ativo</span>}
-        {data.user.emailVerifiedAt ? (
-          <span className="text-emerald-300">Email verificado</span>
+        <span className="text-gray-400">|</span>
+        <span>
+          Plano: <strong>{getAccountPlanLabel(plan)}</strong>
+        </span>
+        {isRoot ? <span className="root-pill">Controle total ativo</span> : null}
+        {emailVerified ? (
+          <span className="text-emerald-300">Email confirmado</span>
         ) : (
-          <span className="text-amber-300">Email nÃ£o verificado</span>
+          <Link href="/verify" className="text-amber-300 underline underline-offset-4">
+            Falta confirmar seu email
+          </Link>
         )}
       </div>
     </div>
   )
 }
-
-
-
