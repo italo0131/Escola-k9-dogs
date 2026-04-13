@@ -55,7 +55,7 @@ export default function LoginPage() {
         }
 
         if (res.error === "ACCOUNT_SUSPENDED") {
-          const note = "Sua conta esta temporariamente indisponivel. Se precisar, chame o suporte para entendermos juntos."
+          const note = "Sua conta esta temporariamente indisponivel. Fale com a equipe K9 para regularizar o acesso."
           setMessage(note)
           pushToast({ title: "Conta indisponivel", description: note, variant: "error" })
           return
@@ -68,7 +68,7 @@ export default function LoginPage() {
           return
         }
 
-        const note = "Nao consegui entrar com esses dados. Vale revisar email e senha com calma."
+        const note = "Nao consegui entrar com esses dados. Vale revisar o email e a senha temporaria enviados pela equipe."
         setMessage(note)
         pushToast({ title: "Acesso nao confirmado", description: note, variant: "error" })
         return
@@ -80,7 +80,7 @@ export default function LoginPage() {
         title: "Tudo certo por aqui",
         description: session?.user?.emailVerifiedAt
           ? "Seu acesso foi liberado. Vamos continuar de onde voce parou."
-          : "Seu acesso foi liberado. Falta so confirmar o email para liberar tudo.",
+          : "Seu acesso foi liberado. Falta so confirmar o email para proteger a conta.",
         variant: "success",
       })
       router.push(destination)
@@ -107,14 +107,15 @@ export default function LoginPage() {
           <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-[0.25em] text-cyan-200/80">
             Acesso K9 Training
           </span>
-          <h1 className="text-4xl font-bold leading-tight md:text-5xl">Entre e siga no seu ritmo, com clareza sobre o proximo passo.</h1>
+          <h1 className="text-4xl font-bold leading-tight md:text-5xl">Entre com o acesso criado pela equipe e acompanhe o proximo passo do seu cao.</h1>
           <p className="max-w-xl text-lg leading-8 text-gray-300/85">
-            Tutores acompanham rotina e progresso. Profissionais organizam agenda, conteudo e relacionamento. A plataforma te guia sem pressa e sem ruido.
+            A plataforma e exclusiva para clientes da K9 Training. Cada conta recebe modulos especificos para treinos,
+            cursos, agenda e acompanhamento.
           </p>
           <div className="grid max-w-2xl grid-cols-1 gap-3 sm:grid-cols-3">
-            <Badge title="Tutor" value="Treinos, caes e agenda no mesmo lugar" />
-            <Badge title="Profissional" value="Conteudos, atendimentos e comunidade" />
-            <Badge title="Seguranca" value="Email verificado e protecao extra quando necessario" />
+            <Badge title="Cliente" value="Treinos, caes e agenda no mesmo lugar" />
+            <Badge title="Equipe" value="Modulos liberados de forma manual" />
+            <Badge title="Seguranca" value="Conta protegida e criada pela equipe K9" />
           </div>
         </div>
 
@@ -124,7 +125,7 @@ export default function LoginPage() {
               <p className="text-sm uppercase tracking-[0.2em] text-cyan-200/80">Entrar</p>
               <h2 className="text-2xl font-semibold">Que bom te ver por aqui.</h2>
               <p className="mt-2 text-sm leading-7 text-gray-300/80">
-                Use suas credenciais para continuar de onde parou. Se ainda faltar alguma confirmacao, a plataforma vai te orientar sem te deixar perdido.
+                Use o email e a senha enviados pela equipe K9. Se ainda faltar alguma confirmacao, a plataforma vai te orientar sem te deixar perdido.
               </p>
             </div>
 
@@ -183,13 +184,13 @@ export default function LoginPage() {
             {message ? <p className="mt-4 text-sm leading-7 text-cyan-100">{message}</p> : null}
 
             <div className="mt-6 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm leading-7 text-slate-300">
-              Se a plataforma te pedir verificacao de email ou codigo extra, isso e so uma camada de protecao para a sua conta e para a comunidade.
+              Se voce ainda nao recebeu login, a equipe K9 precisa criar sua conta antes do primeiro acesso.
             </div>
 
             <div className="mt-6 flex items-center justify-between text-sm text-gray-300/80">
-              <span>Ainda nao tem conta?</span>
+              <span>Precisa de acesso?</span>
               <Link href="/register" className="text-cyan-300 underline-offset-4 hover:text-cyan-200 hover:underline">
-                Criar conta
+                Entender como receber a conta
               </Link>
             </div>
           </div>

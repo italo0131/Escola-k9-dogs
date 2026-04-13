@@ -2,16 +2,14 @@ import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import { requireUser } from "@/lib/auth"
 import { formatChannelLocation, formatDateRange, formatMoney } from "@/lib/community"
-import { getRoleLabel, isAdminRole, isApprovedProfessional, needsProfessionalApproval } from "@/lib/role"
-import { getForumPostTypeLabel, hasPremiumPlatformAccess } from "@/lib/platform"
+import { getRoleLabel, isAdminRole } from "@/lib/role"
+import { getForumPostTypeLabel } from "@/lib/platform"
 import SafeImage from "@/app/components/SafeImage"
 
 export default async function ForumPage() {
   const session = await requireUser()
-  const hasPremiumAccess = hasPremiumPlatformAccess(session.user.plan, session.user.role, session.user.planStatus)
-  const canCreateChannel = isApprovedProfessional(session.user.role, session.user.status)
   const isAdmin = isAdminRole(session.user.role)
-  const professionalPending = needsProfessionalApproval(session.user.role, session.user.status)
+  const canCreateChannel = isAdmin
 
   const [channels, subscriptions] = await Promise.all([
     prisma.forumChannel.findMany({
@@ -55,19 +53,14 @@ export default async function ForumPage() {
             <p className="text-sm uppercase tracking-[0.2em] text-cyan-200/80">Forum K9</p>
             <h1 className="mt-3 text-3xl font-semibold">Acompanhe profissionais, descubra canais e entre na conversa certa.</h1>
             <p className="mt-3 text-sm text-slate-300">
-              Veja a vitrine dos canais, acompanhe o mural social da comunidade e suba de plano quando quiser entrar
-              nas conversas fechadas, comentar nos posts internos e assinar o trabalho dos profissionais.
+              Veja os canais publicos, acompanhe o mural da comunidade e entre nas conversas que fazem parte do seu acompanhamento na K9 Training.
             </p>
             <div className="mt-5 flex flex-wrap gap-3">
               <Link
-                href={hasPremiumAccess ? "/forum/new" : "/billing?locked=/forum/new"}
-                className={`rounded-2xl px-4 py-3 text-sm font-semibold text-white shadow-lg transition ${
-                  hasPremiumAccess
-                    ? "bg-cyan-500 shadow-cyan-500/20"
-                    : "bg-[linear-gradient(135deg,#f59e0b,#f97316)] shadow-amber-500/20"
-                }`}
+                href="/forum/new"
+                className="rounded-2xl bg-cyan-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-cyan-500/20 transition"
               >
-                {hasPremiumAccess ? "Novo post" : "Ativar plano para postar"}
+                Novo post
               </Link>
               {canCreateChannel && (
                 <Link
@@ -77,30 +70,8 @@ export default async function ForumPage() {
                   Criar canal
                 </Link>
               )}
-              {professionalPending && (
-                <span className="rounded-2xl border border-amber-300/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-50">
-                  Perfil profissional em analise
-                </span>
-              )}
             </div>
           </section>
-
-          {!hasPremiumAccess && (
-            <section className="rounded-[28px] border border-amber-300/20 bg-amber-500/10 p-6 shadow-lg shadow-black/20">
-              <p className="text-sm uppercase tracking-[0.2em] text-amber-100/80">Hierarquia de planos</p>
-              <h2 className="mt-3 text-2xl font-semibold text-amber-50">Seu plano atual libera a vitrine, nao o acesso interno.</h2>
-              <p className="mt-3 text-sm leading-7 text-amber-50/90">
-                No Free voce conhece os profissionais, abre os canais e avalia o posicionamento de cada um. Para
-                comentar no forum, assinar canais e abrir o conteudo exclusivo, a plataforma pede Starter ou Pro.
-              </p>
-              <Link
-                href="/billing?locked=/forum"
-                className="mt-5 inline-flex rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-slate-950"
-              >
-                Escolher plano
-              </Link>
-            </section>
-          )}
 
           <section className="rounded-[28px] border border-white/10 bg-white/6 p-6 shadow-lg shadow-black/30">
             <div className="flex items-center justify-between">
@@ -138,10 +109,8 @@ export default async function ForumPage() {
                     <p>{channel._count.contents} modulos • {channel._count.threads} posts</p>
                     <p className="text-cyan-100/80">
                       {subscribedChannelIds.has(channel.id)
-                        ? "Canal ja conectado ao seu plano."
-                        : hasPremiumAccess
-                          ? "Abra o canal e escolha se quer assinar."
-                          : "Abra o canal para conhecer a vitrine antes do upgrade."}
+                        ? "Canal ja conectado a sua conta."
+                        : "Abra o canal para entrar, seguir ou acompanhar o conteudo liberado."}
                     </p>
                   </div>
                 </Link>

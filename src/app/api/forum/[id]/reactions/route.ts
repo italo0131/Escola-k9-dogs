@@ -1,16 +1,13 @@
-import { prisma } from "@/lib/prisma"
 import { NextRequest, NextResponse } from "next/server"
-import { requireApiUser } from "@/app/api/_auth"
-import { hasPremiumPlatformAccess } from "@/lib/platform"
+
+import { prisma } from "@/lib/prisma"
 import { isAdminRole } from "@/lib/role"
 
-export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+import { requireApiUser } from "@/app/api/_auth"
+
+export async function POST(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { session, error } = await requireApiUser()
   if (error) return error
-
-  if (!hasPremiumPlatformAccess(session.user.plan, session.user.role, session.user.planStatus)) {
-    return NextResponse.json({ success: false, message: "Forum disponivel apenas nos planos pagos" }, { status: 403 })
-  }
 
   const { id } = await params
 
@@ -29,15 +26,18 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   })
 
   if (!thread) {
-    return NextResponse.json({ success: false, message: "Post nao encontrado" }, { status: 404 })
+    return NextResponse.json({ success: false, message: "Post nao encontrado." }, { status: 404 })
   }
 
   if (thread.channel) {
     const canAccessChannel =
-      thread.channel.ownerId === session.user.id || isAdminRole(session.user.role) || thread.channel.subscriptions.length > 0
+      thread.channel.isPublic ||
+      thread.channel.ownerId === session.user.id ||
+      isAdminRole(session.user.role) ||
+      thread.channel.subscriptions.length > 0
 
     if (!canAccessChannel) {
-      return NextResponse.json({ success: false, message: "Assine o canal para curtir este post" }, { status: 403 })
+      return NextResponse.json({ success: false, message: "Seu acesso ainda nao inclui esse canal privado." }, { status: 403 })
     }
   }
 

@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma migrate deploy && next build",
     "start": "next start -H 0.0.0.0",
     "lint": "eslint",
+    "postinstall": "prisma generate",
     "bootstrap:accounts": "node scripts/bootstrap-accounts.mjs"
   },
   "dependencies": {

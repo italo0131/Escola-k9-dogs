@@ -11,7 +11,7 @@ import {
 } from "react"
 import { useSession } from "next-auth/react"
 
-import { hasPremiumPlatformAccess, isPlanActiveStatus } from "@/lib/platform"
+import { dedupeModuleKeys, hasModuleAccess } from "@/lib/access"
 import { isAdminRole, isRootRole, isStaffRole } from "@/lib/role"
 
 type PlatformSessionValue = {
@@ -20,14 +20,14 @@ type PlatformSessionValue = {
   isLoggedIn: boolean
   isLoading: boolean
   role: string
-  plan: string
-  planStatus: string
+  modules: string[]
+  createdByAdmin: boolean
   emailVerified: boolean
   isAdmin: boolean
   isRoot: boolean
   isStaff: boolean
-  hasPremiumAccess: boolean
-  hasActivePlan: boolean
+  hasManagedAccess: boolean
+  hasModule: (required: string | string[] | null | undefined) => boolean
   refreshSession: () => Promise<unknown>
 }
 
@@ -39,18 +39,17 @@ export function PlatformSessionProvider({ children }: { children: ReactNode }) {
   const [lastSyncedAt, setLastSyncedAt] = useState(0)
 
   const role = String(data?.user?.role || "GUEST").toUpperCase()
-  const plan = String(data?.user?.plan || "FREE").toUpperCase()
-  const planStatus = String(data?.user?.planStatus || "ACTIVE").toUpperCase()
+  const modules = dedupeModuleKeys(data?.user?.modules || [])
+  const createdByAdmin = !!data?.user?.createdByAdmin
   const isLoggedIn = status === "authenticated" && !!data?.user?.id
   const isLoading = status === "loading"
   const emailVerified = !!data?.user?.emailVerifiedAt
   const isAdmin = isAdminRole(role)
   const isRoot = isRootRole(role)
   const isStaff = isStaffRole(role)
-  const hasActivePlan = isPlanActiveStatus(planStatus)
-  const hasPremiumAccess = hasPremiumPlatformAccess(plan, role, planStatus)
+  const hasManagedAccess = isLoggedIn && ((data?.user?.status || "ACTIVE") !== "SUSPENDED")
 
-  const refreshSession = useEffectEvent(async () => {
+  const syncSessionEffect = useEffectEvent(async () => {
     const now = Date.now()
     if (status !== "authenticated") return null
     if (now - lastSyncedAt < 15_000) return null
@@ -59,29 +58,38 @@ export function PlatformSessionProvider({ children }: { children: ReactNode }) {
     return update()
   })
 
+  const refreshSession = async () => {
+    const now = Date.now()
+    if (status !== "authenticated") return null
+    if (now - lastSyncedAt < 15_000) return null
+
+    setLastSyncedAt(now)
+    return update()
+  }
+
   useEffect(() => {
     const html = document.documentElement
 
     html.dataset.auth = isLoggedIn ? "authenticated" : status
     html.dataset.role = role.toLowerCase()
-    html.dataset.plan = plan.toLowerCase()
-    html.dataset.planStatus = planStatus.toLowerCase()
+    html.dataset.accessModel = createdByAdmin ? "admin-managed" : "legacy"
+    html.dataset.modules = modules.join(",").toLowerCase()
 
     html.classList.toggle("root-mode", isRoot)
     html.classList.toggle("logged-in", isLoggedIn)
-    html.classList.toggle("premium-plan", hasPremiumAccess)
+    html.classList.toggle("managed-access", hasManagedAccess)
     html.classList.toggle("email-pending", isLoggedIn && !emailVerified)
 
     return () => {
       if (status === "unauthenticated") {
-        html.classList.remove("root-mode", "logged-in", "premium-plan", "email-pending")
+        html.classList.remove("root-mode", "logged-in", "managed-access", "email-pending")
         html.dataset.auth = "unauthenticated"
         html.dataset.role = "guest"
-        html.dataset.plan = "free"
-        html.dataset.planStatus = "active"
+        html.dataset.accessModel = "public"
+        html.dataset.modules = ""
       }
     }
-  }, [emailVerified, hasPremiumAccess, isLoggedIn, isRoot, plan, planStatus, role, status])
+  }, [createdByAdmin, emailVerified, hasManagedAccess, isLoggedIn, isRoot, modules, role, status])
 
   useEffect(() => {
     if (!isLoggedIn) return
@@ -89,7 +97,7 @@ export function PlatformSessionProvider({ children }: { children: ReactNode }) {
     const syncVisibleSession = () => {
       if (document.visibilityState === "hidden") return
       startTransition(() => {
-        void refreshSession()
+        void syncSessionEffect()
       })
     }
 
@@ -104,7 +112,7 @@ export function PlatformSessionProvider({ children }: { children: ReactNode }) {
       window.removeEventListener("focus", syncVisibleSession)
       document.removeEventListener("visibilitychange", syncVisibleSession)
     }
-  }, [isLoggedIn, refreshSession])
+  }, [isLoggedIn])
 
   const value: PlatformSessionValue = {
     session: data,
@@ -112,15 +120,15 @@ export function PlatformSessionProvider({ children }: { children: ReactNode }) {
     isLoggedIn,
     isLoading,
     role,
-    plan,
-    planStatus,
+    modules,
+    createdByAdmin,
     emailVerified,
     isAdmin,
     isRoot,
     isStaff,
-    hasPremiumAccess,
-    hasActivePlan,
-    refreshSession: () => refreshSession(),
+    hasManagedAccess,
+    hasModule: (required) => hasModuleAccess(modules, required, role),
+    refreshSession,
   }
 
   return <PlatformSessionContext.Provider value={value}>{children}</PlatformSessionContext.Provider>

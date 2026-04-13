@@ -3,11 +3,10 @@
 import Link from "next/link"
 
 import { usePlatformSession } from "@/app/components/PlatformSessionProvider"
-import { getAccountPlanLabel } from "@/lib/platform"
 import { getRoleLabel, isRootRole } from "@/lib/role"
 
 export default function UserBanner() {
-  const { session, role, plan, emailVerified, isLoggedIn } = usePlatformSession()
+  const { session, role, modules, emailVerified, isLoggedIn } = usePlatformSession()
   const isRoot = isRootRole(role)
 
   if (!isLoggedIn || !session?.user) return null
@@ -24,7 +23,7 @@ export default function UserBanner() {
         </span>
         <span className="text-gray-400">|</span>
         <span>
-          Plano: <strong>{getAccountPlanLabel(plan)}</strong>
+          Modulos: <strong>{modules.length}</strong>
         </span>
         {isRoot ? <span className="root-pill">Controle total ativo</span> : null}
         {emailVerified ? (

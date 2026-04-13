@@ -1,0 +1,103 @@
+{
+  "sorted_middleware": [],
+  "middleware": {
+    "/": {
+      "files": [
+        "server/edge/chunks/node_modules_3693ccac._.js",
+        "server/edge/chunks/[root-of-the-server]__90ba3615._.js",
+        "server/edge/chunks/turbopack-node_modules_next_dist_esm_build_templates_edge-wrapper_6ca060d3.js"
+      ],
+      "name": "middleware",
+      "page": "/",
+      "matchers": [
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/admin/:path*{(\\\\.json)}?",
+          "originalSource": "/admin/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/dashboard/:path*{(\\\\.json)}?",
+          "originalSource": "/dashboard/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/calendar/:path*{(\\\\.json)}?",
+          "originalSource": "/calendar/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/agendamento/:path*{(\\\\.json)}?",
+          "originalSource": "/agendamento/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/conteudos/:path*{(\\\\.json)}?",
+          "originalSource": "/conteudos/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/courses/:path*{(\\\\.json)}?",
+          "originalSource": "/courses/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/dogs/:path*{(\\\\.json)}?",
+          "originalSource": "/dogs/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/forum/:path*{(\\\\.json)}?",
+          "originalSource": "/forum/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/profile/:path*{(\\\\.json)}?",
+          "originalSource": "/profile/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/training/:path*{(\\\\.json)}?",
+          "originalSource": "/training/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/verify/:path*{(\\\\.json)}?",
+          "originalSource": "/verify/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/api/admin/:path*{(\\\\.json)}?",
+          "originalSource": "/api/admin/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/api/content/:path*{(\\\\.json)}?",
+          "originalSource": "/api/content/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/api/dogs/:path*{(\\\\.json)}?",
+          "originalSource": "/api/dogs/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/api/forum/:path*{(\\\\.json)}?",
+          "originalSource": "/api/forum/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/api/profile/:path*{(\\\\.json)}?",
+          "originalSource": "/api/profile/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/api/schedule/:path*{(\\\\.json)}?",
+          "originalSource": "/api/schedule/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/api/training/:path*{(\\\\.json)}?",
+          "originalSource": "/api/training/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/api/verify/:path*{(\\\\.json)}?",
+          "originalSource": "/api/verify/:path*"
+        }
+      ],
+      "wasm": [],
+      "assets": [],
+      "env": {
+        "__NEXT_BUILD_ID": "development",
+        "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY": "VAGSZgtTgKLJ1swf50LZz7S/DaHm1iXaZRQaxWW60ss=",
+        "__NEXT_PREVIEW_MODE_ID": "32c17de783c5b0df8ccfe54a6b156ef8",
+        "__NEXT_PREVIEW_MODE_ENCRYPTION_KEY": "5c671b35cdaceb16212b887cd542645c549cd7245fedf9c2c4e4c5467097c3f5",
+        "__NEXT_PREVIEW_MODE_SIGNING_KEY": "36ec50d08b2a35c35f45f43828ee9c235c720a67fb894c65aea52a42427b7ee7"
+      }
+    }
+  },
+  "instrumentation": null,
+  "functions": {}
+}

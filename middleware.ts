@@ -1,33 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getToken } from "next-auth/jwt"
 
-import { hasPremiumPlatformAccess } from "./src/lib/platform"
-import { isAdminRole, isRootRole } from "./src/lib/role"
+import { getRequiredModulesForPath, getSessionModuleKeys, hasModuleAccess, isProtectedPath, isPublicPath } from "./src/lib/access"
+import { isAdminRole } from "./src/lib/role"
 
 const ADMIN_PATHS = ["/admin", "/api/admin"]
-const STAFF_PATHS = ["/forum/channels/new", "/conteudos/new", "/api/forum/channels", "/api/content"]
-const PREMIUM_PATHS = ["/forum", "/conteudos", "/training", "/calendar"]
-const PROTECTED_PATHS = [
-  "/billing",
-  "/dashboard",
-  "/calendar",
-  "/dogs",
-  "/dogs/new",
-  "/training",
-  "/profile",
-  "/blog/new",
-  "/forum",
-  "/forum/new",
-  "/api/billing",
-  "/api/dogs",
-  "/api/training",
-  "/api/schedule",
-  "/api/profile",
-  "/api/forum",
-  "/api/content",
-  "/api/verify",
-]
-const VERIFICATION_ALLOWED_PREFIXES = ["/dashboard", "/verify", "/api/verify", "/api/auth", "/logout", "/login", "/register"]
 const CONTENT_SECURITY_POLICY = [
   "default-src 'self'",
   "base-uri 'self'",
@@ -58,10 +35,13 @@ function applySecurityHeaders(response: NextResponse) {
 }
 
 export async function middleware(req: NextRequest) {
-  const url = req.nextUrl
-  const path = url.pathname
+  const path = req.nextUrl.pathname
 
-  const requiresAuth = matchesPrefix(path, ADMIN_PATHS) || matchesPrefix(path, STAFF_PATHS) || matchesPrefix(path, PROTECTED_PATHS)
+  if (isPublicPath(path) && !matchesPrefix(path, ADMIN_PATHS)) {
+    return applySecurityHeaders(NextResponse.next())
+  }
+
+  const requiresAuth = isProtectedPath(path) || matchesPrefix(path, ADMIN_PATHS)
 
   if (!requiresAuth) {
     return applySecurityHeaders(NextResponse.next())
@@ -82,28 +62,16 @@ export async function middleware(req: NextRequest) {
   }
 
   if (matchesPrefix(path, ADMIN_PATHS) && !isAdminRole(token.role as string)) {
-    return applySecurityHeaders(NextResponse.redirect(new URL("/dashboard", req.url)))
+    return applySecurityHeaders(NextResponse.redirect(new URL("/unauthorized", req.url)))
   }
 
-  if (matchesPrefix(path, STAFF_PATHS) && !isAdminRole(token.role as string) && (token.role || "").toLowerCase() !== "trainer") {
-    return applySecurityHeaders(NextResponse.redirect(new URL("/dashboard", req.url)))
-  }
+  const requiredModules = getRequiredModulesForPath(path)
+  const moduleKeys = getSessionModuleKeys((token.modules as string[]) || [])
 
-  if (matchesPrefix(path, PREMIUM_PATHS) && !hasPremiumPlatformAccess(token.plan as string | undefined, token.role as string | undefined)) {
-    const billingUrl = new URL("/billing", req.url)
-    billingUrl.searchParams.set("locked", path)
-    return applySecurityHeaders(NextResponse.redirect(billingUrl))
-  }
-
-  const emailVerifiedAt = (token as { emailVerifiedAt?: string | null }).emailVerifiedAt
-  const isVerified = !!emailVerifiedAt
-  if (!isVerified && !isRootRole(token.role as string)) {
-    const isAllowed = matchesPrefix(path, VERIFICATION_ALLOWED_PREFIXES)
-    if (!isAllowed) {
-      const verifyUrl = new URL("/verify", req.url)
-      verifyUrl.searchParams.set("next", path)
-      return applySecurityHeaders(NextResponse.redirect(verifyUrl))
-    }
+  if (!hasModuleAccess(moduleKeys, requiredModules, token.role as string | undefined)) {
+    const unauthorizedUrl = new URL("/unauthorized", req.url)
+    unauthorizedUrl.searchParams.set("from", path)
+    return applySecurityHeaders(NextResponse.redirect(unauthorizedUrl))
   }
 
   return applySecurityHeaders(NextResponse.next())
@@ -113,16 +81,16 @@ export const config = {
   matcher: [
     "/admin/:path*",
     "/dashboard/:path*",
-    "/billing/:path*",
     "/calendar/:path*",
+    "/agendamento/:path*",
     "/conteudos/:path*",
+    "/courses/:path*",
     "/dogs/:path*",
     "/forum/:path*",
     "/profile/:path*",
     "/training/:path*",
     "/verify/:path*",
     "/api/admin/:path*",
-    "/api/billing/:path*",
     "/api/content/:path*",
     "/api/dogs/:path*",
     "/api/forum/:path*",
@@ -130,6 +98,5 @@ export const config = {
     "/api/schedule/:path*",
     "/api/training/:path*",
     "/api/verify/:path*",
-    "/blog/new/:path*",
   ],
 }

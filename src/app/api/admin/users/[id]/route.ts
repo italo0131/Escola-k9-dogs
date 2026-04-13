@@ -1,14 +1,30 @@
-import { prisma } from "@/lib/prisma"
-import { NextResponse, NextRequest } from "next/server"
-import { requireApiAdmin } from "@/app/api/_auth"
-import { logAudit } from "@/lib/audit"
-import { sendApprovalEmail } from "@/lib/email"
-import { ACCOUNT_PLANS } from "@/lib/platform"
-import { isRootRole } from "@/lib/role"
+import { randomBytes, scryptSync } from "crypto"
+import { NextRequest, NextResponse } from "next/server"
 
-const ALLOWED_ROLES = ["ADMIN", "ROOT", "SUPERADMIN", "TRAINER", "VET", "CLIENT"]
-const ALLOWED_STATUS = ["ACTIVE", "PENDING_APPROVAL", "SUSPENDED"]
-const ALLOWED_PLAN_STATUS = ["ACTIVE", "CHECKOUT_REQUIRED", "CHECKOUT_PENDING", "PAST_DUE", "CANCELED"]
+import { logAudit } from "@/lib/audit"
+import { prisma } from "@/lib/prisma"
+import { USER_ROLES, USER_STATUSES, isRootRole } from "@/lib/role"
+
+import { requireApiAdmin } from "@/app/api/_auth"
+
+const ROOT_ONLY_ROLES = new Set(["ROOT", "SUPERADMIN"])
+type UserAdminUpdateFields = {
+  name?: string
+  phone?: string | null
+  role?: string
+  status?: string
+  twoFactorEnabled?: boolean
+  emailVerifiedAt?: Date | null
+  phoneVerifiedAt?: Date | null
+  createdByAdmin?: boolean
+  password?: string
+}
+
+function hashPassword(password: string) {
+  const salt = randomBytes(16).toString("hex")
+  const derived = scryptSync(password, salt, 64).toString("hex")
+  return `scrypt:${salt}:${derived}`
+}
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { session, error } = await requireApiAdmin()
@@ -20,42 +36,39 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   const currentUser = await prisma.user.findUnique({
     where: { id },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      plan: true,
-      planStatus: true,
-      planActivatedAt: true,
-      emailVerifiedAt: true,
+    include: {
+      modules: {
+        select: {
+          id: true,
+        },
+      },
     },
   })
 
   if (!currentUser) {
-    return NextResponse.json({ success: false, message: "Usuario nao encontrado" }, { status: 404 })
+    return NextResponse.json({ success: false, message: "Usuario nao encontrado." }, { status: 404 })
   }
 
-  const updates: any = {}
-  let shouldSendApprovalEmail = data.sendApprovalEmail === true
+  const updates: UserAdminUpdateFields = {}
 
-  if (typeof data.name === "string") updates.name = data.name
-  if (typeof data.phone === "string") updates.phone = data.phone
+  if (typeof data.name === "string") updates.name = data.name.trim()
+  if (typeof data.phone === "string") updates.phone = data.phone.trim() || null
 
   if (typeof data.role === "string") {
-    if (!isRoot) {
-      return NextResponse.json({ success: false, message: "Somente root pode alterar papeis" }, { status: 403 })
-    }
     const role = data.role.toUpperCase()
-    if (!ALLOWED_ROLES.includes(role)) {
-      return NextResponse.json({ success: false, message: "Role invalida" }, { status: 400 })
+    if (!USER_ROLES.includes(role as (typeof USER_ROLES)[number])) {
+      return NextResponse.json({ success: false, message: "Role invalida." }, { status: 400 })
+    }
+    if (!isRoot && ROOT_ONLY_ROLES.has(role)) {
+      return NextResponse.json({ success: false, message: "Somente root pode promover para esse papel." }, { status: 403 })
     }
     updates.role = role
   }
 
   if (typeof data.status === "string") {
     const status = data.status.toUpperCase()
-    if (!ALLOWED_STATUS.includes(status)) {
-      return NextResponse.json({ success: false, message: "Status invalido" }, { status: 400 })
+    if (!USER_STATUSES.includes(status as (typeof USER_STATUSES)[number])) {
+      return NextResponse.json({ success: false, message: "Status invalido." }, { status: 400 })
     }
     updates.status = status
   }
@@ -72,78 +85,76 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     updates.phoneVerifiedAt = data.phoneVerified ? new Date() : null
   }
 
-  if (typeof data.plan === "string") {
-    const plan = data.plan.toUpperCase()
-    if (!ACCOUNT_PLANS.includes(plan as (typeof ACCOUNT_PLANS)[number])) {
-      return NextResponse.json({ success: false, message: "Plano invalido" }, { status: 400 })
+  if (typeof data.createdByAdmin === "boolean") {
+    updates.createdByAdmin = data.createdByAdmin
+  }
+
+  if (typeof data.password === "string" && data.password.trim()) {
+    updates.password = hashPassword(data.password.trim())
+  }
+
+  const moduleIds: string[] | null = Array.isArray(data.moduleIds)
+    ? Array.from(
+        new Set(
+          data.moduleIds
+            .map((value: unknown) => String(value))
+            .filter((value: string): value is string => Boolean(value)),
+        ),
+      )
+    : null
+
+  if (moduleIds) {
+    const count = await prisma.module.count({ where: { id: { in: moduleIds } } })
+    if (count !== moduleIds.length) {
+      return NextResponse.json({ success: false, message: "Um ou mais modulos informados nao existem." }, { status: 400 })
     }
-    updates.plan = plan
   }
 
-  if (typeof data.planStatus === "string") {
-    const planStatus = data.planStatus.toUpperCase()
-    if (!ALLOWED_PLAN_STATUS.includes(planStatus)) {
-      return NextResponse.json({ success: false, message: "Status do plano invalido" }, { status: 400 })
-    }
-    updates.planStatus = planStatus
-  }
-
-  if (Object.prototype.hasOwnProperty.call(data, "planActivatedAt")) {
-    updates.planActivatedAt = data.planActivatedAt ? new Date(data.planActivatedAt) : null
-  }
-
-  if (data.approveAccess === true) {
-    updates.status = "ACTIVE"
-    updates.emailVerifiedAt = currentUser.emailVerifiedAt || new Date()
-    updates.planStatus = "ACTIVE"
-    updates.planActivatedAt = currentUser.planActivatedAt || new Date()
-    shouldSendApprovalEmail = true
-  }
-
-  const resolvedPlan = String(updates.plan || currentUser.plan || "FREE").toUpperCase()
-  const resolvedPlanStatus = String(updates.planStatus || currentUser.planStatus || "ACTIVE").toUpperCase()
-
-  if (resolvedPlan === "FREE") {
-    updates.planStatus = "ACTIVE"
-    if (!Object.prototype.hasOwnProperty.call(updates, "planActivatedAt")) {
-      updates.planActivatedAt = currentUser.planActivatedAt || new Date()
-    }
-  } else if (resolvedPlanStatus === "ACTIVE" && !Object.prototype.hasOwnProperty.call(updates, "planActivatedAt")) {
-    updates.planActivatedAt = currentUser.planActivatedAt || new Date()
-  } else if (
-    currentUser.plan === "FREE" &&
-    resolvedPlan !== "FREE" &&
-    resolvedPlanStatus !== "ACTIVE" &&
-    !Object.prototype.hasOwnProperty.call(updates, "planActivatedAt")
-  ) {
-    updates.planActivatedAt = null
-  }
-
-  if (Object.keys(updates).length === 0) {
-    return NextResponse.json({ success: false, message: "Nada para atualizar" }, { status: 400 })
+  if (Object.keys(updates).length === 0 && !moduleIds) {
+    return NextResponse.json({ success: false, message: "Nada para atualizar." }, { status: 400 })
   }
 
   try {
     const user = await prisma.user.update({
       where: { id },
-      data: updates,
+      data: {
+        ...updates,
+        ...(moduleIds
+          ? {
+              modules: {
+                set: moduleIds.map((moduleId) => ({ id: moduleId })),
+              },
+            }
+          : {}),
+      },
+      include: {
+        modules: {
+          orderBy: { name: "asc" },
+          select: {
+            id: true,
+            key: true,
+            name: true,
+          },
+        },
+      },
     })
 
-    if (shouldSendApprovalEmail) {
-      await sendApprovalEmail(id, session?.user?.name || "Admin")
-    }
-
-    const { password, ...safe } = user
+    const safe = { ...user } as Record<string, unknown>
+    delete safe.password
     await logAudit({
       actorId: session?.user?.id || null,
       action: "USER_UPDATE",
       targetType: "user",
       targetId: id,
-      metadata: updates,
+      metadata: {
+        updates,
+        moduleIds,
+      },
     })
+
     return NextResponse.json({ success: true, user: safe })
   } catch (err) {
-    console.error("ERRO PATCH /admin/users/[id]:", err)
-    return NextResponse.json({ success: false, message: "Erro ao atualizar usuario" }, { status: 500 })
+    console.error("ERRO PATCH /api/admin/users/[id]:", err)
+    return NextResponse.json({ success: false, message: "Erro ao atualizar usuario." }, { status: 500 })
   }
 }

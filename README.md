@@ -35,8 +35,7 @@ O produto combina:
 ## Regras de plano
 
 - Free: ate 3 caes, blog e area de racas
-- Starter: acesso completo a conteudos, forum, treinos, agenda e canais
-- Pro: acesso completo com posicionamento premium
+- Pago: R$ 59,90/mes com acesso completo a conteudos, forum, treinos, agenda, IA e canais
 
 ## Rodando localmente
 
@@ -49,8 +48,15 @@ Abra `http://localhost:3000`.
 ## Build de producao
 
 ```bash
+npx prisma migrate deploy
 npm run build
 npm run start
+```
+
+Se o banco atual ja foi sincronizado no passado com `prisma db push`, rode uma unica vez antes do primeiro deploy com migrations:
+
+```bash
+npx prisma migrate resolve --applied 20260402223000_init
 ```
 
 ## Pontos de infraestrutura para producao

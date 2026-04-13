@@ -19,16 +19,20 @@
           "originalSource": "/dashboard/:path*"
         },
         {
-          "regexp": "/:nextData(_next/data/[^/]{1,})?/billing/:path*{(\\\\.json)}?",
-          "originalSource": "/billing/:path*"
-        },
-        {
           "regexp": "/:nextData(_next/data/[^/]{1,})?/calendar/:path*{(\\\\.json)}?",
           "originalSource": "/calendar/:path*"
         },
         {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/agendamento/:path*{(\\\\.json)}?",
+          "originalSource": "/agendamento/:path*"
+        },
+        {
           "regexp": "/:nextData(_next/data/[^/]{1,})?/conteudos/:path*{(\\\\.json)}?",
           "originalSource": "/conteudos/:path*"
+        },
+        {
+          "regexp": "/:nextData(_next/data/[^/]{1,})?/courses/:path*{(\\\\.json)}?",
+          "originalSource": "/courses/:path*"
         },
         {
           "regexp": "/:nextData(_next/data/[^/]{1,})?/dogs/:path*{(\\\\.json)}?",
@@ -53,10 +57,6 @@
         {
           "regexp": "/:nextData(_next/data/[^/]{1,})?/api/admin/:path*{(\\\\.json)}?",
           "originalSource": "/api/admin/:path*"
-        },
-        {
-          "regexp": "/:nextData(_next/data/[^/]{1,})?/api/billing/:path*{(\\\\.json)}?",
-          "originalSource": "/api/billing/:path*"
         },
         {
           "regexp": "/:nextData(_next/data/[^/]{1,})?/api/content/:path*{(\\\\.json)}?",
@@ -85,20 +85,16 @@
         {
           "regexp": "/:nextData(_next/data/[^/]{1,})?/api/verify/:path*{(\\\\.json)}?",
           "originalSource": "/api/verify/:path*"
-        },
-        {
-          "regexp": "/:nextData(_next/data/[^/]{1,})?/blog/new/:path*{(\\\\.json)}?",
-          "originalSource": "/blog/new/:path*"
         }
       ],
       "wasm": [],
       "assets": [],
       "env": {
-        "__NEXT_BUILD_ID": "PQVkyna4PU4bbGrqD80Kj",
-        "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY": "j2fbiY7MWToyq5NSBQhVZkmm3TS4P4kEipplYPxxZLA=",
-        "__NEXT_PREVIEW_MODE_ID": "2f8b746b37a1d48299a79699ee04c994",
-        "__NEXT_PREVIEW_MODE_ENCRYPTION_KEY": "697b027ed43aad525f5b7649d9d2810f302bce960bea8f0c938ac4f314674dc2",
-        "__NEXT_PREVIEW_MODE_SIGNING_KEY": "9fd2afcb142843fa4aefeaa2b64a9f6ff57af614142dd2f13d846f115fe0d2e3"
+        "__NEXT_BUILD_ID": "GSNmlbkCOXoUrSOtSFGpc",
+        "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY": "TODO_REPLACE_WITH_32_BYTE_KEY",
+        "__NEXT_PREVIEW_MODE_ID": "51a915f3ad4646acdb209459bc9742eb",
+        "__NEXT_PREVIEW_MODE_ENCRYPTION_KEY": "42aba9f43b59d2ed1d96628b17eecb46c41e74e7657d97fb5c80b522695427a0",
+        "__NEXT_PREVIEW_MODE_SIGNING_KEY": "474a09626acc2eb7ed417dbb04f2ba389d6ffb4ffe092e13d133bc0da057c9b0"
       }
     }
   },

@@ -3,6 +3,8 @@ import NextAuth from "next-auth"
 declare module "next-auth" {
   interface User {
     role?: string
+    createdByAdmin?: boolean
+    modules?: string[]
     plan?: string
     planStatus?: string
   }
@@ -13,6 +15,8 @@ declare module "next-auth" {
       name?: string | null
       email?: string | null
       role?: string
+      createdByAdmin?: boolean
+      modules?: string[]
       plan?: string
       planStatus?: string
       emailVerifiedAt?: string | null
@@ -25,6 +29,8 @@ declare module "next-auth" {
 declare module "next-auth/jwt" {
   interface JWT {
     role?: string
+    createdByAdmin?: boolean
+    modules?: string[]
     plan?: string
     planStatus?: string
     emailVerifiedAt?: string | null

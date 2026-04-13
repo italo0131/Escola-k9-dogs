@@ -9,7 +9,7 @@ type Plan = {
   name: string
   price: string
   description: string
-  priceId?: string | null
+  checkoutReady: boolean
   highlight?: boolean
   perks: string[]
 }
@@ -19,38 +19,49 @@ function getButtonLabel({
   isPending,
   isLoading,
   planCode,
+  planName,
   checkoutReady,
 }: {
   isCurrent: boolean
   isPending: boolean
   isLoading: boolean
   planCode: string
+  planName: string
   checkoutReady: boolean
 }) {
   if (isCurrent) return "Plano atual"
   if (isLoading) return "Processando..."
   if (!checkoutReady && planCode !== "FREE") return "Indisponivel agora"
-  if (isPending) return "Concluir assinatura"
-  return planCode === "FREE" ? "Ficar no Free" : `Escolher ${planCode === "PRO" ? "Pro" : "Starter"}`
+  if (isPending) return "Concluir pagamento"
+  return planCode === "FREE" ? "Ficar no Free" : `Escolher ${planName}`
 }
 
 export default function BillingClient({
   plans,
   currentPlan,
   planStatus,
+  billingProvider,
+  providerLabel,
 }: {
   plans: Plan[]
   currentPlan: string
   planStatus: string
+  billingProvider: string
+  providerLabel: string
 }) {
   const [message, setMessage] = useState("")
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
+  const [managing, setManaging] = useState(false)
+  const [canceling, setCanceling] = useState(false)
   const { refreshSession } = usePlatformSession()
 
+  const canManageCurrentPlan = currentPlan !== "FREE" && (planStatus === "ACTIVE" || planStatus === "PAST_DUE")
+  const hasStripePortal = billingProvider === "STRIPE"
+
   const handleSelect = async (plan: Plan) => {
-    const checkoutReady = plan.code === "FREE" || !!plan.priceId
+    const checkoutReady = plan.code === "FREE" || plan.checkoutReady
     if (!checkoutReady) {
-      setMessage("Esse plano ainda nao foi conectado ao Stripe. Configure o price ID antes de liberar a assinatura.")
+      setMessage(`Esse plano ainda nao foi conectado ao ${providerLabel}. Configure o ambiente antes de liberar a assinatura.`)
       return
     }
 
@@ -78,7 +89,7 @@ export default function BillingClient({
       const res = await fetch("/api/billing/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ priceId: plan.priceId, plan: plan.code }),
+        body: JSON.stringify({ plan: plan.code }),
       })
       const data = await res.json().catch(() => null)
       if (!res.ok || !data?.success || !data?.url) {
@@ -95,6 +106,56 @@ export default function BillingClient({
     }
   }
 
+  const handleManageSubscription = async () => {
+    setManaging(true)
+    setMessage("")
+
+    try {
+      const response = await fetch("/api/billing/portal", {
+        method: "POST",
+      })
+      const data = await response.json().catch(() => null)
+      if (!response.ok || !data?.success || !data?.url) {
+        setMessage(data?.message || "Nao foi possivel abrir o autoatendimento agora.")
+        return
+      }
+
+      window.location.href = data.url
+    } catch (error) {
+      console.error("Erro portal billing", error)
+      setMessage("Erro ao abrir o autoatendimento da assinatura.")
+    } finally {
+      setManaging(false)
+    }
+  }
+
+  const handleCancelSubscription = async () => {
+    if (!window.confirm("Tem certeza de que deseja cancelar a assinatura agora?")) return
+
+    setCanceling(true)
+    setMessage("")
+
+    try {
+      const response = await fetch("/api/billing/subscription", {
+        method: "DELETE",
+      })
+      const data = await response.json().catch(() => null)
+      if (!response.ok || !data?.success) {
+        setMessage(data?.message || "Nao foi possivel cancelar a assinatura agora.")
+        return
+      }
+
+      setMessage(data?.message || "Assinatura cancelada com sucesso.")
+      await refreshSession()
+      window.location.reload()
+    } catch (error) {
+      console.error("Erro cancelamento billing", error)
+      setMessage("Erro ao cancelar a assinatura.")
+    } finally {
+      setCanceling(false)
+    }
+  }
+
   return (
     <div className="space-y-5">
       <div className="grid gap-4 lg:grid-cols-3">
@@ -102,7 +163,7 @@ export default function BillingClient({
           const isSelected = currentPlan === plan.code
           const isCurrent = isSelected && planStatus === "ACTIVE"
           const isPending = isSelected && (planStatus === "CHECKOUT_REQUIRED" || planStatus === "CHECKOUT_PENDING")
-          const checkoutReady = plan.code === "FREE" || !!plan.priceId
+          const checkoutReady = plan.code === "FREE" || plan.checkoutReady
 
           return (
             <article
@@ -136,7 +197,7 @@ export default function BillingClient({
 
               {!checkoutReady ? (
                 <div className="mt-5 rounded-2xl border border-amber-300/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-50">
-                  Faltando integrar o price ID desse plano no Stripe.
+                  Faltando conectar esse plano ao {providerLabel}.
                 </div>
               ) : null}
 
@@ -154,6 +215,7 @@ export default function BillingClient({
                   isPending,
                   isLoading: loadingPlan === plan.code,
                   planCode: plan.code,
+                  planName: plan.name,
                   checkoutReady,
                 })}
               </button>
@@ -163,6 +225,41 @@ export default function BillingClient({
       </div>
 
       {message ? <p className="text-sm text-cyan-100">{message}</p> : null}
+
+      {canManageCurrentPlan ? (
+        <div className="rounded-[26px] border border-white/10 bg-white/5 p-5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="space-y-2">
+              <p className="text-sm font-semibold text-white">Gerenciar assinatura</p>
+              <p className="text-sm leading-6 text-slate-300">
+                {hasStripePortal
+                  ? "Abra o portal para trocar cartao, atualizar cobranca, cancelar ou reativar quando o Stripe estiver no comando."
+                  : "Com o provedor atual, o cancelamento ja pode ser feito aqui. Para troca de cartao e reativacao, ainda falta a camada de autoatendimento completa."}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              {hasStripePortal ? (
+                <button
+                  type="button"
+                  onClick={handleManageSubscription}
+                  disabled={managing || canceling}
+                  className="rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {managing ? "Abrindo portal..." : "Gerenciar no Stripe"}
+                </button>
+              ) : null}
+              <button
+                type="button"
+                onClick={handleCancelSubscription}
+                disabled={managing || canceling}
+                className="rounded-2xl bg-[linear-gradient(135deg,#f97316,#ef4444)] px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-orange-500/20 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {canceling ? "Cancelando..." : "Cancelar assinatura"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

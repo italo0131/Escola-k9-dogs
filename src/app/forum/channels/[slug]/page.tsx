@@ -1,17 +1,16 @@
-import { prisma } from "@/lib/prisma"
 import Link from "next/link"
-import { requireUser } from "@/lib/auth"
-import { formatChannelLocation, formatDateRange, formatMoney, formatServiceMode } from "@/lib/community"
-import { getRoleLabel, isAdminRole } from "@/lib/role"
+
 import ChannelSubscriptionButton from "@/app/components/ChannelSubscriptionButton"
 import SafeImage from "@/app/components/SafeImage"
+import { requireUser } from "@/lib/auth"
+import { formatChannelLocation, formatDateRange, formatMoney, formatServiceMode } from "@/lib/community"
+import { prisma } from "@/lib/prisma"
+import { getRoleLabel, isAdminRole } from "@/lib/role"
 import {
-  getAccountPlanLabel,
   getChannelContentAccessLabel,
   getChannelContentCategoryLabel,
   getChannelContentTypeLabel,
   getForumPostTypeLabel,
-  hasPremiumPlatformAccess,
 } from "@/lib/platform"
 
 export default async function ForumChannelPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -42,23 +41,24 @@ export default async function ForumChannelPage({ params }: { params: Promise<{ s
 
   if (!channel) {
     return (
-      <div className="min-h-[100svh] flex items-center justify-center text-white">
+      <div className="flex min-h-[100svh] items-center justify-center text-white">
         <p>Canal nao encontrado.</p>
       </div>
     )
   }
+
   const isOwner = channel.ownerId === session.user.id || isAdminRole(session.user.role)
-  const hasPremiumAccess = hasPremiumPlatformAccess(session.user.plan, session.user.role, session.user.planStatus)
   const isSubscribed = channel.subscriptions.some((item) => item.userId === session.user.id)
-  const canAccessPosts = isOwner || isSubscribed
+  const canAccessPosts = channel.isPublic || isOwner || isSubscribed
   const previewThreads = channel.threads.slice(0, 4)
+
   const channelAccessMessage = isOwner
     ? "Voce administra este canal e enxerga toda a operacao."
     : isSubscribed
       ? "Canal ativo na sua conta. Feed interno, comentarios e modulos liberados."
-      : hasPremiumAccess
-        ? "Seu plano ja permite entrar. Falta apenas assinar este canal para abrir o feed interno."
-        : `Seu plano ${getAccountPlanLabel(session.user.plan)} libera a vitrine do canal, mas nao a area interna.`
+      : channel.isPublic
+        ? "Canal publico. Voce pode entrar para acompanhar o conteudo liberado e interagir."
+        : "Canal privado da operacao K9. A equipe pode liberar esse acesso quando fizer sentido para o seu acompanhamento."
 
   return (
     <div className="min-h-[100svh] bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.12),transparent_24%),linear-gradient(145deg,#020617,#0f172a_55%,#020617)] px-4 py-10 text-white sm:px-6">
@@ -79,7 +79,7 @@ export default async function ForumChannelPage({ params }: { params: Promise<{ s
             <Metric title="Profissional" value={`${channel.owner.name} • ${getRoleLabel(channel.owner.role)}`} />
             <Metric title="Formato social" value={`${channel.contents.length} modulos • ${channel.threads.length} posts`} />
             <Metric title="Local" value={formatChannelLocation(channel.city, channel.state)} />
-            <Metric title="Assinatura" value={formatMoney(channel.subscriptionPrice) || "Gratuita"} />
+            <Metric title="Participacao" value={channel.isPublic ? "Canal publico" : "Canal privado"} />
             <Metric
               title="Servicos"
               value={`${formatMoney(channel.onlinePrice) || "Online sob consulta"} • ${formatMoney(channel.inPersonPrice) || "Presencial sob consulta"}`}
@@ -91,14 +91,8 @@ export default async function ForumChannelPage({ params }: { params: Promise<{ s
           </div>
 
           <div className="mt-6 flex flex-wrap gap-3">
-            <ChannelSubscriptionButton
-              channelId={channel.id}
-              initialSubscribed={isSubscribed}
-              isOwner={isOwner}
-              hasPremiumAccess={hasPremiumAccess}
-              upgradeHref="/billing?locked=/forum"
-            />
-            {(isOwner || isSubscribed) && (
+            <ChannelSubscriptionButton channelId={channel.id} initialSubscribed={isSubscribed} isOwner={isOwner} />
+            {(isOwner || isSubscribed || channel.isPublic) && (
               <Link
                 href={`/forum/new?channel=${channel.slug}`}
                 className="rounded-2xl bg-cyan-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-cyan-500/20"
@@ -120,14 +114,6 @@ export default async function ForumChannelPage({ params }: { params: Promise<{ s
             >
               Publicar no blog
             </Link>
-            {!isOwner && !isSubscribed && !hasPremiumAccess && (
-              <Link
-                href="/billing?locked=/forum"
-                className="rounded-2xl border border-amber-300/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-50 transition hover:bg-amber-500/20"
-              >
-                Escolher plano
-              </Link>
-            )}
           </div>
         </section>
 
@@ -141,22 +127,22 @@ export default async function ForumChannelPage({ params }: { params: Promise<{ s
               <span className="text-sm text-gray-400">{channel.contents.length} materiais</span>
             </div>
 
-            {channel.contents.length === 0 && <p className="mt-4 text-gray-300">Nenhum conteudo publicado ainda.</p>}
+            {channel.contents.length === 0 ? <p className="mt-4 text-gray-300">Nenhum conteudo publicado ainda.</p> : null}
 
             <div className="mt-4 grid gap-4 md:grid-cols-2">
               {channel.contents.map((content) => {
-                const canOpenContent = isOwner || content.accessLevel === "FREE" || isSubscribed
+                const canOpenContent = isOwner || channel.isPublic || content.accessLevel === "FREE" || isSubscribed
                 const contentCard = (
                   <>
-                    {content.coverImageUrl && (
+                    {content.coverImageUrl ? (
                       <SafeImage src={content.coverImageUrl} alt={content.title} className="h-40 w-full object-cover" />
-                    )}
+                    ) : null}
                     <div className="p-5">
                       <div className="flex flex-wrap gap-2 text-xs">
                         <span className="rounded-full bg-cyan-500/15 px-3 py-1 text-cyan-100">{getChannelContentTypeLabel(content.contentType)}</span>
                         <span className="rounded-full bg-white/10 px-3 py-1 text-gray-100">{getChannelContentAccessLabel(content.accessLevel)}</span>
                         <span className="rounded-full bg-white/10 px-3 py-1 text-gray-100">{getChannelContentCategoryLabel(content.category)}</span>
-                        {content.durationMinutes && <span className="rounded-full bg-white/10 px-3 py-1 text-gray-100">{content.durationMinutes} min</span>}
+                        {content.durationMinutes ? <span className="rounded-full bg-white/10 px-3 py-1 text-gray-100">{content.durationMinutes} min</span> : null}
                       </div>
                       <h3 className="mt-3 text-lg font-semibold">
                         {content.orderIndex ? `${content.orderIndex}. ` : ""}
@@ -164,11 +150,7 @@ export default async function ForumChannelPage({ params }: { params: Promise<{ s
                       </h3>
                       <p className="mt-2 text-sm text-gray-300">{truncate(content.summary || content.body, 150)}</p>
                       <p className="mt-3 text-xs text-gray-400">{content.author.name}</p>
-                      {!canOpenContent && (
-                        <p className="mt-3 text-xs text-amber-100">
-                          {hasPremiumAccess ? "Assine o canal para abrir este material." : "Ative um plano pago para abrir este material."}
-                        </p>
-                      )}
+                      {!canOpenContent ? <p className="mt-3 text-xs text-amber-100">Esse material depende de acesso ao canal privado.</p> : null}
                     </div>
                   </>
                 )
@@ -203,64 +185,55 @@ export default async function ForumChannelPage({ params }: { params: Promise<{ s
               <span className="text-sm text-gray-400">{channel.threads.length} posts</span>
             </div>
 
-            {!canAccessPosts && (
+            {!canAccessPosts ? (
               <div className="mt-4 rounded-[24px] border border-dashed border-white/15 bg-white/5 p-5 text-sm text-slate-300">
-                {hasPremiumAccess
-                  ? "Assine este canal para abrir o feed interno, comentar nos posts do profissional e acompanhar os eventos publicados aqui."
-                  : "Seu plano atual deixa voce conhecer o canal, mas o feed interno e os comentarios ficam nos planos pagos."}
+                Esse feed pertence a um canal privado e precisa ser liberado pela equipe K9.
               </div>
-            )}
+            ) : null}
 
-            {canAccessPosts && channel.threads.length === 0 && <p className="mt-4 text-gray-300">Nenhum post ainda neste canal.</p>}
+            {canAccessPosts && channel.threads.length === 0 ? <p className="mt-4 text-gray-300">Nenhum post ainda neste canal.</p> : null}
 
             <div className="mt-4 space-y-3">
-              {canAccessPosts &&
-                channel.threads.map((thread) => (
-                  <Link
-                    key={thread.id}
-                    href={`/forum/${thread.id}`}
-                    className="block rounded-[24px] border border-white/10 bg-white/5 p-5 transition hover:bg-white/10"
-                  >
-                    <div className="flex flex-wrap items-center gap-2 text-xs">
-                      <span className="rounded-full bg-cyan-500/15 px-3 py-1 text-cyan-100">{getForumPostTypeLabel(thread.postType)}</span>
-                      <span className="rounded-full bg-white/10 px-3 py-1 text-gray-100">{thread._count.reactions} curtidas</span>
-                      <span className="rounded-full bg-white/10 px-3 py-1 text-gray-100">{thread._count.replies} comentarios</span>
-                    </div>
-                    <h3 className="mt-3 text-lg font-semibold">{thread.title}</h3>
-                    {thread.imageUrl && (
-                      <div className="mt-3 overflow-hidden rounded-[20px] border border-white/10 bg-slate-950/40">
-                        <SafeImage src={thread.imageUrl} alt={thread.title} className="h-40 w-full object-cover" />
+              {canAccessPosts
+                ? channel.threads.map((thread) => (
+                    <Link
+                      key={thread.id}
+                      href={`/forum/${thread.id}`}
+                      className="block rounded-[24px] border border-white/10 bg-white/5 p-5 transition hover:bg-white/10"
+                    >
+                      <div className="flex flex-wrap items-center gap-2 text-xs">
+                        <span className="rounded-full bg-cyan-500/15 px-3 py-1 text-cyan-100">{getForumPostTypeLabel(thread.postType)}</span>
+                        <span className="rounded-full bg-white/10 px-3 py-1 text-gray-100">{thread._count.reactions} curtidas</span>
+                        <span className="rounded-full bg-white/10 px-3 py-1 text-gray-100">{thread._count.replies} comentarios</span>
                       </div>
-                    )}
-                    <p className="mt-2 text-sm text-gray-300">{truncate(thread.content, 180)}</p>
-                    {thread.postType === "EVENTO" && thread.eventStartsAt && (
-                      <p className="mt-3 text-xs text-emerald-200">
-                        {formatDateRange(thread.eventStartsAt, thread.eventEndsAt)} •{" "}
-                        {thread.eventLocation || formatChannelLocation(thread.eventCity, thread.eventState)}
-                      </p>
-                    )}
-                    <p className="mt-3 text-xs text-gray-400">{thread.author.name}</p>
-                  </Link>
-                ))}
-
-              {!canAccessPosts &&
-                previewThreads.map((thread) => (
-                  <div
-                    key={thread.id}
-                    className="rounded-[24px] border border-white/10 bg-white/5 p-5 opacity-90"
-                  >
-                    <div className="flex flex-wrap items-center gap-2 text-xs">
-                      <span className="rounded-full bg-cyan-500/15 px-3 py-1 text-cyan-100">{getForumPostTypeLabel(thread.postType)}</span>
-                      <span className="rounded-full bg-white/10 px-3 py-1 text-gray-100">{thread._count.reactions} curtidas</span>
-                      <span className="rounded-full bg-white/10 px-3 py-1 text-gray-100">{thread._count.replies} comentarios</span>
+                      <h3 className="mt-3 text-lg font-semibold">{thread.title}</h3>
+                      {thread.imageUrl ? (
+                        <div className="mt-3 overflow-hidden rounded-[20px] border border-white/10 bg-slate-950/40">
+                          <SafeImage src={thread.imageUrl} alt={thread.title} className="h-40 w-full object-cover" />
+                        </div>
+                      ) : null}
+                      <p className="mt-2 text-sm text-gray-300">{truncate(thread.content, 180)}</p>
+                      {thread.postType === "EVENTO" && thread.eventStartsAt ? (
+                        <p className="mt-3 text-xs text-emerald-200">
+                          {formatDateRange(thread.eventStartsAt, thread.eventEndsAt)} •{" "}
+                          {thread.eventLocation || formatChannelLocation(thread.eventCity, thread.eventState)}
+                        </p>
+                      ) : null}
+                      <p className="mt-3 text-xs text-gray-400">{thread.author.name}</p>
+                    </Link>
+                  ))
+                : previewThreads.map((thread) => (
+                    <div key={thread.id} className="rounded-[24px] border border-white/10 bg-white/5 p-5 opacity-90">
+                      <div className="flex flex-wrap items-center gap-2 text-xs">
+                        <span className="rounded-full bg-cyan-500/15 px-3 py-1 text-cyan-100">{getForumPostTypeLabel(thread.postType)}</span>
+                        <span className="rounded-full bg-white/10 px-3 py-1 text-gray-100">{thread._count.reactions} curtidas</span>
+                        <span className="rounded-full bg-white/10 px-3 py-1 text-gray-100">{thread._count.replies} comentarios</span>
+                      </div>
+                      <h3 className="mt-3 text-lg font-semibold">{thread.title}</h3>
+                      <p className="mt-2 text-sm text-gray-300">{truncate(thread.content, 180)}</p>
+                      <p className="mt-3 text-xs text-amber-100">Esse canal privado precisa ser liberado pela equipe K9.</p>
                     </div>
-                    <h3 className="mt-3 text-lg font-semibold">{thread.title}</h3>
-                    <p className="mt-2 text-sm text-gray-300">{truncate(thread.content, 180)}</p>
-                    <p className="mt-3 text-xs text-amber-100">
-                      {hasPremiumAccess ? "Assine o canal para abrir o post completo." : "Ative um plano pago para acessar o feed interno deste canal."}
-                    </p>
-                  </div>
-                ))}
+                  ))}
             </div>
           </div>
         </section>
@@ -272,13 +245,13 @@ export default async function ForumChannelPage({ params }: { params: Promise<{ s
 function Metric({ title, value }: { title: string; value: string }) {
   return (
     <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-      <p className="text-xs uppercase tracking-[0.2em] text-gray-400">{title}</p>
-      <p className="mt-2 text-sm text-white">{value}</p>
+      <p className="text-xs uppercase tracking-[0.2em] text-slate-400">{title}</p>
+      <p className="mt-2 text-lg font-semibold">{value}</p>
     </div>
   )
 }
 
-function truncate(value: string | null | undefined, max = 160) {
-  if (!value) return ""
-  return value.length > max ? `${value.slice(0, max).trim()}...` : value
+function truncate(value: string, max: number) {
+  if (value.length <= max) return value
+  return `${value.slice(0, max).trim()}...`
 }

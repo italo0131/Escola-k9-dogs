@@ -33,6 +33,9 @@
     "[project]/src/app/admin/finance/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
+    "[project]/src/app/admin/modules/page": [
+      "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
+    ],
     "[project]/src/app/admin/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
@@ -150,7 +153,16 @@
     "[project]/src/app/profile/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
+    "[project]/src/app/racas/[id]/page": [
+      "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
+    ],
+    "[project]/src/app/racas/comparador/page": [
+      "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
+    ],
     "[project]/src/app/racas/page": [
+      "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
+    ],
+    "[project]/src/app/racas/radar/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
     "[project]/src/app/register/page": [
@@ -169,6 +181,9 @@
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
     "[project]/src/app/training/page": [
+      "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
+    ],
+    "[project]/src/app/unauthorized/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
     "[project]/src/app/verify/page": [

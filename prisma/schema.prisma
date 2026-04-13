@@ -9,51 +9,72 @@ datasource db {
 }
 
 model User {
-  id                String    @id @default(cuid())
-  name              String
-  email             String    @unique
-  password          String
-  role              String    @default("CLIENT")
-  status            String    @default("ACTIVE")
-  plan              String    @default("FREE")
-  planStatus        String    @default("ACTIVE")
-  planActivatedAt   DateTime?
-  headline          String?
-  bio               String?
-  city              String?
-  state             String?
-  specialties       String?
-  experienceYears   Int?
-  availabilityNotes String?
-  websiteUrl        String?
-  instagramHandle   String?
-  companyId         String?
-  company           Company?  @relation(fields: [companyId], references: [id])
-  emailVerifiedAt   DateTime?
-  phone             String?
-  phoneVerifiedAt   DateTime?
-  twoFactorEnabled  Boolean   @default(false)
-  breedAdvisorProfile Json?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  id                    String    @id @default(cuid())
+  name                  String
+  email                 String    @unique
+  password              String
+  role                  String    @default("CLIENT")
+  status                String    @default("ACTIVE")
+  createdByAdmin        Boolean   @default(false)
+  plan                  String    @default("FREE")
+  planStatus            String    @default("ACTIVE")
+  planActivatedAt       DateTime?
+  billingProvider       String?
+  billingPendingPlan    String?
+  billingCustomerId     String?   @unique
+  billingSubscriptionId String?   @unique
+  billingCheckoutId     String?   @unique
+  headline              String?
+  bio                   String?
+  city                  String?
+  state                 String?
+  specialties           String?
+  experienceYears       Int?
+  availabilityNotes     String?
+  websiteUrl            String?
+  instagramHandle       String?
+  companyId             String?
+  company               Company?  @relation(fields: [companyId], references: [id])
+  emailVerifiedAt       DateTime?
+  phone                 String?
+  phoneVerifiedAt       DateTime?
+  twoFactorEnabled      Boolean   @default(false)
+  breedAdvisorProfile   Json?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 
-  dogs                 Dog[]
-  schedules            Schedule[]
-  assignedSchedules    Schedule[]            @relation("ScheduleTrainer")
-  blogPosts            BlogPost[]
-  blogComments         BlogComment[]         @relation("UserBlogComments")
-  blogReactions        BlogPostReaction[]
-  forumChannels        ForumChannel[]        @relation("ForumChannelOwner")
-  channelSubscriptions ChannelSubscription[]
-  channelContents      ChannelContent[]      @relation("ChannelContentAuthor")
-  forumThreads         ForumThread[]         @relation("UserForumThreads")
-  forumThreadReactions ForumThreadReaction[]
-  forumReplies         ForumReply[]          @relation("UserForumReplies")
-  coachedTrainings     TrainingSession[]     @relation("TrainingSessionCoach")
-  payments             Payment[]
-  auditLogs            AuditLog[]
-  verificationCodes    VerificationCode[]
-forumPosts ForumPost[] @relation("UserForumPosts")
+  dogs                  Dog[]
+  modules               Module[]              @relation("UserModules")
+  schedules             Schedule[]
+  assignedSchedules     Schedule[]            @relation("ScheduleTrainer")
+  blogPosts             BlogPost[]
+  blogComments          BlogComment[]         @relation("UserBlogComments")
+  blogReactions         BlogPostReaction[]
+  forumChannels         ForumChannel[]        @relation("ForumChannelOwner")
+  channelSubscriptions  ChannelSubscription[]
+  channelContents       ChannelContent[]      @relation("ChannelContentAuthor")
+  forumThreads          ForumThread[]         @relation("UserForumThreads")
+  forumThreadReactions  ForumThreadReaction[]
+  forumReplies          ForumReply[]          @relation("UserForumReplies")
+  coachedTrainings      TrainingSession[]     @relation("TrainingSessionCoach")
+  adminCreatedDogs      Dog[]                 @relation("DogCreatedByAdmin")
+  adminCreatedSchedules Schedule[]            @relation("ScheduleCreatedByAdmin")
+  adminCreatedTrainings TrainingSession[]     @relation("TrainingSessionCreatedByAdmin")
+  payments              Payment[]
+  auditLogs             AuditLog[]
+  verificationCodes     VerificationCode[]
+  forumPosts            ForumPost[]           @relation("UserForumPosts")
+}
+
+model Module {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  name        String
+  description String?
+  contentIds  String[] @default([])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  users       User[]   @relation("UserModules")
 }
 
 model Company {
@@ -111,6 +132,8 @@ model Dog {
   neutered                   Boolean           @default(false)
   ownerId                    String
   owner                      User              @relation(fields: [ownerId], references: [id])
+  createdByAdminId           String?
+  createdByAdmin             User?             @relation("DogCreatedByAdmin", fields: [createdByAdminId], references: [id])
   companyId                  String?
   company                    Company?          @relation(fields: [companyId], references: [id])
   schedules                  Schedule[]
@@ -119,80 +142,89 @@ model Dog {
 }
 
 model TrainingSession {
-  id              String   @id @default(cuid())
-  title           String
-  description     String?
-  focusArea       String?
-  difficulty      String?
-  durationMinutes Int?
-  trainerNotes    String?
-  homework        String?
-  videoUrl        String?
-  progress        Int
-  dogId           String
-  dog             Dog      @relation(fields: [dogId], references: [id])
-  coachId         String?
-  coach           User?    @relation("TrainingSessionCoach", fields: [coachId], references: [id])
-  executedAt      DateTime @default(now())
-  createdAt       DateTime @default(now())
+  id               String   @id @default(cuid())
+  title            String
+  description      String?
+  focusArea        String?
+  difficulty       String?
+  durationMinutes  Int?
+  trainerNotes     String?
+  homework         String?
+  videoUrl         String?
+  progress         Int
+  dogId            String
+  dog              Dog      @relation(fields: [dogId], references: [id])
+  coachId          String?
+  coach            User?    @relation("TrainingSessionCoach", fields: [coachId], references: [id])
+  createdByAdminId String?
+  createdByAdmin   User?    @relation("TrainingSessionCreatedByAdmin", fields: [createdByAdminId], references: [id])
+  executedAt       DateTime @default(now())
+  createdAt        DateTime @default(now())
 }
 
 model Schedule {
-  id              String   @id @default(cuid())
-  title           String   @default("Sessao de treino")
-  notes           String?
-  location        String?
-  format          String   @default("PRESENTIAL")
-  durationMinutes Int?
-  date            DateTime
-  status          String
-  userId          String
-  user            User     @relation(fields: [userId], references: [id])
-  trainerId       String?
-  trainer         User?    @relation("ScheduleTrainer", fields: [trainerId], references: [id])
-  dogId           String?
-  dog             Dog?     @relation(fields: [dogId], references: [id])
+  id               String   @id @default(cuid())
+  title            String   @default("Sessao de treino")
+  notes            String?
+  location         String?
+  format           String   @default("PRESENTIAL")
+  durationMinutes  Int?
+  date             DateTime
+  status           String
+  userId           String
+  user             User     @relation(fields: [userId], references: [id])
+  trainerId        String?
+  trainer          User?    @relation("ScheduleTrainer", fields: [trainerId], references: [id])
+  createdByAdminId String?
+  createdByAdmin   User?    @relation("ScheduleCreatedByAdmin", fields: [createdByAdminId], references: [id])
+  dogId            String?
+  dog              Dog?     @relation(fields: [dogId], references: [id])
 }
 
 model BlogPost {
-  id            String    @id @default(cuid())
+  id            String             @id @default(cuid())
   title         String
-  slug          String    @unique
-  category      String    @default("GERAL")
-  postType      String    @default("POST")
-  accessLevel   String    @default("FREE")
+  slug          String             @unique
+  category      String             @default("GERAL")
+  postType      String             @default("POST")
+  accessLevel   String             @default("FREE")
   excerpt       String?
   content       String
   coverImageUrl String?
   videoUrl      String?
-  featured      Boolean   @default(false)
+  featured      Boolean            @default(false)
   eventStartsAt DateTime?
   eventEndsAt   DateTime?
   eventLocation String?
   eventCity     String?
   eventState    String?
-  published     Boolean   @default(true)
+  published     Boolean            @default(true)
   authorId      String
-  author        User      @relation(fields: [authorId], references: [id])
+  author        User               @relation(fields: [authorId], references: [id])
   comments      BlogComment[]
   reactions     BlogPostReaction[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
 }
 
 model Payment {
-  id            String   @id @default(cuid())
-  stripeEventId String   @unique
-  type          String
-  status        String?
-  amount        Int?
-  currency      String?
-  customerEmail String?
-  customerId    String?
-  userId        String?
-  user          User?    @relation(fields: [userId], references: [id])
-  raw           String?
-  createdAt     DateTime @default(now())
+  id                     String   @id @default(cuid())
+  stripeEventId          String?  @unique
+  provider               String   @default("STRIPE")
+  providerEventId        String?  @unique
+  providerCheckoutId     String?
+  providerSubscriptionId String?
+  providerPaymentId      String?
+  type                   String
+  status                 String?
+  amount                 Int?
+  currency               String?
+  customerEmail          String?
+  customerId             String?
+  userId                 String?
+  user                   User?    @relation(fields: [userId], references: [id])
+  raw                    String?
+  createdAt              DateTime @default(now())
 }
 
 model AuditLog {
@@ -267,6 +299,7 @@ model ChannelContent {
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
 }
+
 model ForumPost {
   id        String      @id @default(cuid())
   content   String
@@ -277,12 +310,11 @@ model ForumPost {
   createdAt DateTime    @default(now())
 }
 
-
 model ForumThread {
-  id            String        @id @default(cuid())
+  id            String                @id @default(cuid())
   title         String
   content       String
-  postType      String        @default("POST")
+  postType      String                @default("POST")
   imageUrl      String?
   videoUrl      String?
   eventStartsAt DateTime?
@@ -291,15 +323,15 @@ model ForumThread {
   eventCity     String?
   eventState    String?
   channelId     String?
-  channel       ForumChannel? @relation(fields: [channelId], references: [id])
-  isPinned      Boolean       @default(false)
+  channel       ForumChannel?         @relation(fields: [channelId], references: [id])
+  isPinned      Boolean               @default(false)
   authorId      String
-  author        User          @relation("UserForumThreads", fields: [authorId], references: [id])
+  author        User                  @relation("UserForumThreads", fields: [authorId], references: [id])
   replies       ForumReply[]
   reactions     ForumThreadReaction[]
-  posts         ForumPost[]   // <-- ADICIONE ESTA LINHA
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  posts         ForumPost[] // <-- ADICIONE ESTA LINHA
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
 }
 
 model ForumReply {

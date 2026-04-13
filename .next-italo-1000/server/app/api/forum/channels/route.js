@@ -1,6 +1,6 @@
 var R=require("../../../../chunks/[turbopack]_runtime.js")("server/app/api/forum/channels/route.js")
-R.c("server/chunks/[root-of-the-server]__48c8c6d2._.js")
-R.c("server/chunks/_767eced8._.js")
+R.c("server/chunks/[root-of-the-server]__62ff5520._.js")
+R.c("server/chunks/_eb728e01._.js")
 R.c("server/chunks/[root-of-the-server]__f408c708._.js")
 R.c("server/chunks/_next-internal_server_app_api_forum_channels_route_actions_6e881f8b.js")
 R.m(70381)

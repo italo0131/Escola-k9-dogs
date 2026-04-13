@@ -3,9 +3,13 @@ import { prisma } from "@/lib/prisma"
 import { formatChannelLocation, formatMoney, formatServiceMode } from "@/lib/community"
 import { getChannelContentAccessLabel, getChannelContentCategoryLabel } from "@/lib/platform"
 import AICoachPanel from "@/app/components/AICoachPanel"
+import { getAuthSession } from "@/lib/auth"
+import { getCourseAccess, hasAllowedId } from "@/lib/course-access"
 
 export default async function CourseDetailPage({ params }: { params: Promise<{ courseId: string }> }) {
   const { courseId } = await params
+  const session = await getAuthSession()
+  const access = await getCourseAccess(session)
 
   const channel = await prisma.forumChannel.findUnique({
     where: { slug: courseId },
@@ -33,6 +37,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ c
           durationMinutes: true,
           orderIndex: true,
           createdAt: true,
+          channelId: true,
         },
         orderBy: [{ orderIndex: "asc" }, { createdAt: "desc" }],
       },
@@ -67,10 +72,19 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ c
     take: 3,
   })
 
-  const totalDuration = channel.contents.reduce((sum, content) => sum + (content.durationMinutes || 0), 0)
-  const freeCount = channel.contents.filter((content) => content.accessLevel === "FREE").length
+  const showAllContents = access.isStaff || access.allowAll || hasAllowedId(access.allowedContentIds, channel.id, channel.slug)
+  const visibleContents = showAllContents
+    ? channel.contents
+    : channel.contents.filter(
+        (content) =>
+          content.accessLevel === "FREE" ||
+          hasAllowedId(access.allowedContentIds, content.id, content.slug, content.channelId),
+      )
+
+  const totalDuration = visibleContents.reduce((sum, content) => sum + (content.durationMinutes || 0), 0)
+  const freeCount = visibleContents.filter((content) => content.accessLevel === "FREE").length
   const groupedModules = Object.entries(
-    channel.contents.reduce<Record<string, typeof channel.contents>>((acc, content) => {
+    visibleContents.reduce<Record<string, typeof channel.contents>>((acc, content) => {
       const key = content.category || "TRILHA"
       if (!acc[key]) acc[key] = []
       acc[key].push(content)
@@ -112,10 +126,10 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ c
 
               <div className="flex flex-wrap gap-3">
                 <Link
-                  href="/register"
+                  href={session?.user ? "/dashboard" : "/login"}
                   className="rounded-2xl bg-[linear-gradient(135deg,#06b6d4,#22c55e)] px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-cyan-500/20"
                 >
-                  Entrar para continuar
+                  {session?.user ? "Ir para o dashboard" : "Entrar para continuar"}
                 </Link>
                 <Link
                   href="#coach-k9"
@@ -133,7 +147,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ c
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
-              <Metric title="Aulas" value={String(channel.contents.length)} description="Itens reais publicados no curso." />
+              <Metric title="Aulas" value={String(visibleContents.length)} description="Itens reais publicados no curso." />
               <Metric title="Acesso livre" value={String(freeCount)} description="Portas de entrada para descoberta." />
               <Metric title="Duracao estimada" value={totalDuration ? `${totalDuration} min` : "Livre"} description="Soma das aulas que ja possuem tempo informado." />
               <Metric title="Comunidade" value={`${channel._count.subscriptions}`} description={`${channel._count.threads} posts no canal e alunos em volta da trilha.`} />
@@ -150,7 +164,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ c
                 <p className="text-sm uppercase tracking-[0.2em] text-cyan-200/80">Mapa do curso</p>
                 <h2 className="mt-2 text-2xl font-semibold">Aulas, modulos e o que ja pode ser estudado</h2>
               </div>
-              <span className="text-sm text-slate-400">{channel.contents.length} itens</span>
+              <span className="text-sm text-slate-400">{visibleContents.length} itens</span>
             </div>
 
             <div className="mt-5 space-y-4">
@@ -165,7 +179,13 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ c
                   </div>
 
                   <div className="mt-4 space-y-3">
-                    {items.map((item) => (
+                    {items.map((item) => {
+                      const canOpen =
+                        showAllContents ||
+                        item.accessLevel === "FREE" ||
+                        hasAllowedId(access.allowedContentIds, item.id, item.slug, item.channelId)
+
+                      return (
                       <div
                         key={item.id}
                         className="rounded-[20px] border border-white/10 bg-white/5 p-4 transition hover:bg-white/10"
@@ -189,31 +209,33 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ c
                         </div>
 
                         <div className="mt-4 flex flex-wrap gap-3">
-                          {item.accessLevel === "FREE" ? (
+                          {canOpen ? (
                             <Link
                               href={`/conteudos/${item.slug}`}
                               className="rounded-2xl border border-white/15 px-4 py-2 text-sm text-gray-100 transition hover:bg-white/10"
                             >
-                              Abrir aula livre
+                              Abrir aula
                             </Link>
                           ) : (
                             <Link
-                              href="/register"
+                              href="/contato"
                               className="rounded-2xl border border-amber-300/20 bg-amber-500/10 px-4 py-2 text-sm text-amber-100 transition hover:bg-amber-500/20"
                             >
-                              Desbloquear trilha
+                              Solicitar acesso
                             </Link>
                           )}
                         </div>
                       </div>
-                    ))}
+                    )})}
                   </div>
                 </div>
               ))}
 
-              {channel.contents.length === 0 && (
+              {visibleContents.length === 0 && (
                 <div className="rounded-[24px] border border-dashed border-white/15 bg-white/5 p-5 text-slate-300">
-                  A trilha ja existe, mas ainda nao recebeu aulas. Quando o canal publicar os modulos, eles aparecerao aqui.
+                  {showAllContents
+                    ? "A trilha ja existe, mas ainda nao recebeu aulas. Quando o canal publicar os modulos, eles aparecerao aqui."
+                    : "Esta trilha esta em acompanhamento privado. A equipe libera as aulas conforme o seu plano com a K9."}
                 </div>
               )}
             </div>

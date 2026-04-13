@@ -3,13 +3,31 @@ import { prisma } from "@/lib/prisma"
 import { formatMoney, formatServiceMode } from "@/lib/community"
 import { getChannelContentAccessLabel, getChannelContentCategoryLabel } from "@/lib/platform"
 import AICoachPanel from "@/app/components/AICoachPanel"
+import { getAuthSession } from "@/lib/auth"
+import { getCourseAccess, hasAllowedId } from "@/lib/course-access"
 
 export const revalidate = 300
 
 export default async function CoursesPage() {
+  const session = await getAuthSession()
+  const access = await getCourseAccess(session)
+  const allowedTokens = Array.from(access.allowedContentIds)
+  const showAllChannels = access.isStaff || access.allowAll
+
   const [channels, freeLessons, blogPosts] = await Promise.all([
     prisma.forumChannel.findMany({
-      where: { isPublic: true },
+      where: showAllChannels
+        ? undefined
+        : allowedTokens.length
+          ? {
+              OR: [
+                { isPublic: true },
+                { id: { in: allowedTokens } },
+                { slug: { in: allowedTokens } },
+                { contents: { some: { id: { in: allowedTokens } } } },
+              ],
+            }
+          : { isPublic: true },
       include: {
         owner: { select: { name: true, headline: true } },
         contents: {
@@ -23,6 +41,8 @@ export default async function CoursesPage() {
             accessLevel: true,
             durationMinutes: true,
             orderIndex: true,
+            createdAt: true,
+            channelId: true,
           },
           orderBy: [{ orderIndex: "asc" }, { createdAt: "desc" }],
         },
@@ -43,10 +63,27 @@ export default async function CoursesPage() {
     }),
   ])
 
-  const totalLessons = channels.reduce((acc, channel) => acc + channel.contents.length, 0)
-  const totalFreeLessons = channels.reduce(
+  const visibleChannels = channels.map((channel) => {
+    const canSeeAll = showAllChannels || hasAllowedId(access.allowedContentIds, channel.id, channel.slug)
+
+    const visibleContents = canSeeAll
+      ? channel.contents
+      : channel.contents.filter((content) =>
+          content.accessLevel === "FREE" ||
+          hasAllowedId(access.allowedContentIds, content.id, content.slug, content.channelId),
+        )
+
+    return {
+      ...channel,
+      contents: visibleContents,
+      _canSeeAllContents: canSeeAll,
+    }
+  })
+
+  const totalLessons = visibleChannels.reduce((acc, channel) => acc + channel.contents.length, 0)
+  const totalFreeLessons = visibleChannels.reduce(
     (acc, channel) => acc + channel.contents.filter((content) => content.accessLevel === "FREE").length,
-    0
+    0,
   )
 
   return (
@@ -79,10 +116,10 @@ export default async function CoursesPage() {
                   Conversar com a IA
                 </Link>
                 <Link
-                  href="/register"
+                  href="/login"
                   className="rounded-2xl border border-white/15 px-5 py-3 text-sm text-gray-100 transition hover:bg-white/10"
                 >
-                  Criar conta
+                  Entrar
                 </Link>
               </div>
             </div>
@@ -108,7 +145,7 @@ export default async function CoursesPage() {
           </div>
 
           <div className="grid gap-4 xl:grid-cols-3">
-            {channels.map((channel) => {
+            {visibleChannels.map((channel) => {
               const freeCount = channel.contents.filter((content) => content.accessLevel === "FREE").length
 
               return (
@@ -145,14 +182,18 @@ export default async function CoursesPage() {
                         </div>
                       ))}
                       {channel.contents.length === 0 && (
-                        <p className="text-sm text-slate-300">As aulas aparecerao aqui quando a trilha receber publicacoes.</p>
+                        <p className="text-sm text-slate-300">
+                          {channel._canSeeAllContents
+                            ? "As aulas aparecerao aqui quando a trilha receber publicacoes."
+                            : "As aulas desta trilha estao liberadas apenas para clientes autorizados pela equipe."}
+                        </p>
                       )}
                     </div>
                   </div>
 
                   <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm">
                     <span className="text-amber-200">{freeCount} itens livres</span>
-                    <span className="text-slate-400">{channel._count.subscriptions} assinaturas - {channel._count.threads} posts</span>
+                    <span className="text-slate-400">{channel._count.subscriptions} acessos - {channel._count.threads} posts</span>
                   </div>
                 </Link>
               )
@@ -228,8 +269,8 @@ export default async function CoursesPage() {
               />
               <JourneyStep
                 step="04"
-                title="Entre no acompanhamento"
-                description="Quando fizer sentido, ative o plano e siga a trilha completa com treinos, agenda e canal."
+                title="Acompanhamento liberado"
+                description="A equipe K9 libera a trilha completa, treinos e agenda conforme o acompanhamento contratado."
               />
             </div>
           </div>

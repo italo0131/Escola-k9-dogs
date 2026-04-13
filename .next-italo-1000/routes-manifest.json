@@ -93,6 +93,14 @@
       "namedRegex": "^/api/admin/dogs/(?<nxtPid>[^/]+?)(?:/)?$"
     },
     {
+      "page": "/api/admin/modules/[id]",
+      "regex": "^/api/admin/modules/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/api/admin/modules/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
       "page": "/api/admin/schedules/[id]",
       "regex": "^/api/admin/schedules/([^/]+?)(?:/)?$",
       "routeKeys": {
@@ -261,6 +269,14 @@
       "namedRegex": "^/forum/(?<nxtPid>[^/]+?)(?:/)?$"
     },
     {
+      "page": "/racas/[id]",
+      "regex": "^/racas/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPid": "nxtPid"
+      },
+      "namedRegex": "^/racas/(?<nxtPid>[^/]+?)(?:/)?$"
+    },
+    {
       "page": "/training/[sessionId]",
       "regex": "^/training/([^/]+?)(?:/)?$",
       "routeKeys": {
@@ -337,6 +353,12 @@
       "namedRegex": "^/admin/finance(?:/)?$"
     },
     {
+      "page": "/admin/modules",
+      "regex": "^/admin/modules(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/modules(?:/)?$"
+    },
+    {
       "page": "/admin/schedule",
       "regex": "^/admin/schedule(?:/)?$",
       "routeKeys": {},
@@ -379,10 +401,22 @@
       "namedRegex": "^/agendamento(?:/)?$"
     },
     {
+      "page": "/api/admin/modules",
+      "regex": "^/api/admin/modules(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/admin/modules(?:/)?$"
+    },
+    {
       "page": "/api/admin/promote",
       "regex": "^/api/admin/promote(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/api/admin/promote(?:/)?$"
+    },
+    {
+      "page": "/api/admin/users",
+      "regex": "^/api/admin/users(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/admin/users(?:/)?$"
     },
     {
       "page": "/api/ai/breed-consultant",
@@ -395,6 +429,12 @@
       "regex": "^/api/ai/coach(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/api/ai/coach(?:/)?$"
+    },
+    {
+      "page": "/api/asaas/webhook",
+      "regex": "^/api/asaas/webhook(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/asaas/webhook(?:/)?$"
     },
     {
       "page": "/api/auth",
@@ -419,6 +459,18 @@
       "regex": "^/api/billing/plan(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/api/billing/plan(?:/)?$"
+    },
+    {
+      "page": "/api/billing/portal",
+      "regex": "^/api/billing/portal(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/billing/portal(?:/)?$"
+    },
+    {
+      "page": "/api/billing/subscription",
+      "regex": "^/api/billing/subscription(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/billing/subscription(?:/)?$"
     },
     {
       "page": "/api/blog",
@@ -697,6 +749,18 @@
       "namedRegex": "^/racas(?:/)?$"
     },
     {
+      "page": "/racas/comparador",
+      "regex": "^/racas/comparador(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/racas/comparador(?:/)?$"
+    },
+    {
+      "page": "/racas/radar",
+      "regex": "^/racas/radar(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/racas/radar(?:/)?$"
+    },
+    {
       "page": "/register",
       "regex": "^/register(?:/)?$",
       "routeKeys": {},
@@ -725,6 +789,12 @@
       "regex": "^/training/new(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/training/new(?:/)?$"
+    },
+    {
+      "page": "/unauthorized",
+      "regex": "^/unauthorized(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/unauthorized(?:/)?$"
     },
     {
       "page": "/verify",

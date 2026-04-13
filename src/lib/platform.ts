@@ -2,8 +2,8 @@ import { isAdminRole } from "@/lib/role"
 
 export const REGISTERABLE_ROLES = ["CLIENT", "TRAINER", "VET"] as const
 
-export const ACCOUNT_PLANS = ["FREE", "STARTER", "PRO"] as const
-export const PAID_ACCOUNT_PLANS = ["STARTER", "PRO"] as const
+export const ACCOUNT_PLANS = ["FREE", "PAID"] as const
+export const PAID_ACCOUNT_PLANS = ["PAID"] as const
 export const FREE_PLAN_DOG_LIMIT = 3
 
 export const ACCOUNT_PLAN_OPTIONS = [
@@ -11,6 +11,8 @@ export const ACCOUNT_PLAN_OPTIONS = [
     code: "FREE",
     name: "Free",
     priceLabel: "R$ 0",
+    priceInCents: 0,
+    billingCycle: null,
     description: "Entrada leve para estudar racas, usar o blog e cadastrar ate 3 caes.",
     perks: [
       "Ate 3 caes por conta",
@@ -19,14 +21,16 @@ export const ACCOUNT_PLAN_OPTIONS = [
     ],
   },
   {
-    code: "STARTER",
-    name: "Starter",
-    priceLabel: "R$ 79/mes",
-    description: "Libera toda a plataforma para treino, agenda, conteudo e comunidade.",
+    code: "PAID",
+    name: "Pago",
+    priceLabel: "R$ 59,90/mes",
+    priceInCents: 5990,
+    billingCycle: "MONTHLY",
+    description: "Assinatura principal com acesso completo a cursos, IA, treino, agenda, forum e comunidade.",
     perks: [
-      "Tudo o que a K9 oferece",
-      "Forum, canais, conteudos, treinos e calendario",
-      "Ideal para clientes ativos e operacao profissional",
+      "Cursos, forum, canais, treinos e agenda completos",
+      "IA personalizada para racas, estudo e rotina",
+      "Assinatura unica e simples para operar toda a plataforma",
     ],
   },
 ] as const
@@ -63,7 +67,7 @@ export const BLOG_POST_TYPES = ["POST", "GUIA", "CASO_REAL", "EVENTO"] as const
 
 export function isPaidPlan(plan?: string | null) {
   const value = String(plan || "FREE").toUpperCase()
-  return value === "STARTER" || value === "PRO"
+  return value === "PAID"
 }
 
 export function isPlanActiveStatus(status?: string | null) {
@@ -73,7 +77,6 @@ export function isPlanActiveStatus(status?: string | null) {
 
 export function hasPremiumPlatformAccess(plan?: string | null, role?: string | null, planStatus?: string | null) {
   if (isAdminRole(role)) return true
-  if (!isPaidPlan(plan)) return false
   if (typeof planStatus === "undefined" || planStatus === null || planStatus === "") return true
   return isPlanActiveStatus(planStatus)
 }
@@ -91,34 +94,35 @@ export function getRemainingDogSlots(currentDogs: number, plan?: string | null, 
 
 export function getPlanStatusLabel(status?: string | null) {
   const value = String(status || "ACTIVE").toUpperCase()
+  if (value === "PENDING_APPROVAL") return "Aguardando liberacao"
   if (value === "CHECKOUT_PENDING") return "Checkout em andamento"
   if (value === "CHECKOUT_REQUIRED") return "Assinatura pendente"
   if (value === "PAST_DUE") return "Pagamento pendente"
   if (value === "CANCELED") return "Cancelado"
+  if (value === "SUSPENDED") return "Suspenso"
   return "Ativo"
 }
 
 export function getAccountPlanLabel(plan?: string | null) {
-  const value = String(plan || "FREE").toUpperCase()
-  if (value === "STARTER") return "Starter"
-  if (value === "PRO") return "Pro"
-  return "Free"
+  const value = String(plan || "MANAGED").toUpperCase()
+  if (value === "PAID") return "Acesso legado"
+  if (value === "FREE") return "Acesso administrado"
+  return "Acesso administrado"
 }
 
 export function getAccountPlanDescription(plan?: string | null) {
-  const value = String(plan || "FREE").toUpperCase()
-  if (value === "STARTER") return "Libera toda a plataforma para estudar, treinar, assinar canais e acompanhar a rotina."
-  if (value === "PRO") return "Libera tudo com operacao premium, mais autoridade e espaco para crescer dentro da K9."
-  return "Ate 3 caes, blog livre e area de racas para entrar no universo K9 com calma."
+  const value = String(plan || "MANAGED").toUpperCase()
+  if (value === "PAID") return "Conta em modo legado. A K9 agora libera acessos por modulos administrados."
+  return "A equipe K9 libera cada modulo manualmente conforme o acompanhamento contratado para o cliente."
 }
 
 export function getPlanUpgradeReason(reason?: string | null) {
   const value = String(reason || "").toLowerCase()
-  if (value.includes("/forum")) return "O forum social e os canais profissionais estao nos planos Starter e Pro."
-  if (value.includes("/conteudos")) return "Os conteudos exclusivos dos adestradores estao nos planos Starter e Pro."
-  if (value.includes("/training")) return "A trilha completa de treino esta nos planos Starter e Pro."
-  if (value.includes("/calendar")) return "A agenda integrada esta nos planos Starter e Pro."
-  return "Essa area faz parte dos planos Starter e Pro."
+  if (value.includes("/forum")) return "O forum e exclusivo para clientes logados da K9 Training."
+  if (value.includes("/conteudos")) return "Esse conteudo precisa ser liberado pela equipe K9 no seu acesso."
+  if (value.includes("/training")) return "Os treinos aparecem apenas quando a equipe K9 libera esse modulo para voce."
+  if (value.includes("/calendar")) return "A agenda so aparece quando o acompanhamento foi liberado pela equipe K9."
+  return "Essa area depende de liberacao manual da equipe K9."
 }
 
 export function getScheduleFormatLabel(format?: string | null) {

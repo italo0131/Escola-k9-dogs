@@ -2,6 +2,7 @@ import Link from "next/link"
 import { prisma } from "@/lib/prisma"
 import { getAuthSession } from "@/lib/auth"
 import { isAdminRole } from "@/lib/role"
+import { getCourseAccess, hasAllowedId } from "@/lib/course-access"
 import VideoEmbed from "@/app/components/VideoEmbed"
 import AICoachPanel from "@/app/components/AICoachPanel"
 import SafeImage from "@/app/components/SafeImage"
@@ -15,6 +16,7 @@ import {
 export default async function ContentDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const session = await getAuthSession()
+  const access = await getCourseAccess(session)
 
   const content = await prisma.channelContent.findUnique({
     where: { slug },
@@ -41,27 +43,19 @@ export default async function ContentDetailPage({ params }: { params: Promise<{ 
       (content.authorId === session.user.id || content.channel.ownerId === session.user.id || isAdminRole(session.user.role))
   )
 
-  const subscription = session?.user?.id
-    ? await prisma.channelSubscription.findUnique({
-        where: {
-          channelId_userId: {
-            channelId: content.channelId,
-            userId: session.user.id,
-          },
-        },
-        select: { status: true },
-      })
-    : null
-
-  const isSubscribed = subscription?.status === "ACTIVE"
-  const canAccess = isOwner || content.accessLevel === "FREE" || isSubscribed
+  const canAccess =
+    isOwner ||
+    access.isStaff ||
+    access.allowAll ||
+    content.accessLevel === "FREE" ||
+    hasAllowedId(access.allowedContentIds, content.id, content.slug, content.channelId, content.channel.slug)
 
   if (!canAccess) {
     return (
       <div className="min-h-[100svh] bg-slate-950 px-4 py-16 text-white sm:px-6">
         <div className="mx-auto max-w-2xl rounded-[28px] border border-white/10 bg-white/5 p-8 text-center">
           <p className="text-sm uppercase tracking-[0.2em] text-cyan-200/80">Conteudos</p>
-          <h1 className="mt-3 text-3xl font-semibold">Assine o curso para liberar esta aula</h1>
+          <h1 className="mt-3 text-3xl font-semibold">Acesso liberado somente para clientes autorizados</h1>
           <p className="mt-3 text-slate-300">
             Este material faz parte da trilha <strong>{content.channel.name}</strong>.
           </p>
@@ -73,10 +67,10 @@ export default async function ContentDetailPage({ params }: { params: Promise<{ 
               Ver pagina do curso
             </Link>
             <Link
-              href={session?.user ? `/forum/channels/${content.channel.slug}` : "/register"}
+              href={session?.user ? `/forum/channels/${content.channel.slug}` : "/contato"}
               className="rounded-2xl bg-[linear-gradient(135deg,#06b6d4,#10b981)] px-5 py-3 text-sm font-semibold text-white"
             >
-              {session?.user ? "Ir para o canal" : "Criar conta para entrar"}
+              {session?.user ? "Ir para o canal" : "Solicitar acesso"}
             </Link>
           </div>
         </div>
@@ -192,10 +186,10 @@ export default async function ContentDetailPage({ params }: { params: Promise<{ 
             Voltar para o curso
           </Link>
           <Link
-            href={session?.user ? "/training/new" : "/register"}
+            href={session?.user ? "/training" : "/login"}
             className="rounded-2xl bg-[linear-gradient(135deg,#06b6d4,#10b981)] px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-cyan-500/20"
           >
-            {session?.user ? "Registrar pratica" : "Criar conta para praticar"}
+            {session?.user ? "Ver meus treinos" : "Entrar para praticar"}
           </Link>
         </section>
       </div>

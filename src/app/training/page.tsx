@@ -8,13 +8,15 @@ import {
 } from "@/lib/platform"
 
 type Props = {
-  searchParams: { dog?: string }
+  searchParams?: Promise<{ dog?: string | string[] }> | { dog?: string | string[] }
 }
 
 export default async function TrainingPage({ searchParams }: Props) {
   const session = await requireUser()
   const isStaff = isStaffSession(session)
-  const dogFilter = searchParams?.dog
+  const resolvedSearchParams = (await searchParams) || {}
+  const dogParam = resolvedSearchParams.dog
+  const dogFilter = Array.isArray(dogParam) ? dogParam[0] : dogParam
   const dogWhere = isStaff ? {} : { ownerId: session.user.id }
 
   const dogs = await prisma.dog.findMany({

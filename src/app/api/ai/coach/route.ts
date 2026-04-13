@@ -55,6 +55,39 @@ function buildTerms(value: string) {
   ).slice(0, 6)
 }
 
+function normalizeText(value: string | null | undefined) {
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^\w\s-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+}
+
+function scoreText(text: string, terms: string[]) {
+  if (!text) return 0
+  const normalized = normalizeText(text)
+  return terms.reduce((score, term) => (normalized.includes(term) ? score + 1 : score), 0)
+}
+
+function scoreContentItem(item: any, terms: string[]) {
+  if (!terms.length) return 1
+  return (
+    scoreText(item.title, terms) * 4 +
+    scoreText(item.summary || "", terms) * 2 +
+    scoreText(item.body || "", terms) +
+    scoreText(item.category || "", terms) +
+    scoreText(item.contentType || "", terms) +
+    scoreText(item.channel?.name || "", terms)
+  )
+}
+
+function scorePostItem(item: any, terms: string[]) {
+  if (!terms.length) return 1
+  return scoreText(item.title, terms) * 4 + scoreText(item.excerpt || "", terms) * 2 + scoreText(item.content || "", terms)
+}
+
 function truncate(value: string | null | undefined, max = 160) {
   if (!value) return ""
   return value.length > max ? `${value.slice(0, max).trim()}...` : value
@@ -111,7 +144,7 @@ export async function POST(req: Request) {
       }
     : undefined
 
-  const [course, content, matchedContents, matchedPosts] = await Promise.all([
+  const [course, content, rawContents, rawPosts] = await Promise.all([
     courseSlug
       ? prisma.forumChannel.findUnique({
           where: { slug: courseSlug },
@@ -160,10 +193,13 @@ export async function POST(req: Request) {
         category: true,
         accessLevel: true,
         durationMinutes: true,
+        contentType: true,
+        orderIndex: true,
+        createdAt: true,
         channel: { select: { name: true, slug: true } },
       },
-      orderBy: [{ orderIndex: "asc" }, { createdAt: "desc" }],
-      take: courseSlug ? 6 : 4,
+      orderBy: [{ createdAt: "desc" }],
+      take: courseSlug ? 24 : 30,
     }),
     prisma.blogPost.findMany({
       where: {
@@ -177,20 +213,44 @@ export async function POST(req: Request) {
         excerpt: true,
         content: true,
         category: true,
+        createdAt: true,
       },
       orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
-      take: 3,
+      take: 10,
     }),
   ])
 
+  const rankedContents = rawContents
+    .map((item) => ({ item, score: scoreContentItem(item, terms) }))
+    .filter((entry) => (terms.length ? entry.score > 0 : true))
+    .sort((a, b) => {
+      if (a.score !== b.score) return b.score - a.score
+      const aOrder = a.item.orderIndex ?? Number.POSITIVE_INFINITY
+      const bOrder = b.item.orderIndex ?? Number.POSITIVE_INFINITY
+      if (aOrder !== bOrder) return aOrder - bOrder
+      return b.item.createdAt.getTime() - a.item.createdAt.getTime()
+    })
+    .slice(0, courseSlug ? 6 : 4)
+    .map((entry) => entry.item)
+
+  const rankedPosts = rawPosts
+    .map((item) => ({ item, score: scorePostItem(item, terms) }))
+    .filter((entry) => (terms.length ? entry.score > 0 : true))
+    .sort((a, b) => {
+      if (a.score !== b.score) return b.score - a.score
+      return b.item.createdAt.getTime() - a.item.createdAt.getTime()
+    })
+    .slice(0, 3)
+    .map((entry) => entry.item)
+
   const recommendations: Recommendation[] = [
-    ...matchedContents.slice(0, 4).map((item) => ({
+    ...rankedContents.slice(0, 4).map((item) => ({
       href: item.accessLevel === "FREE" ? `/conteudos/${item.slug}` : `/courses/${item.channel.slug}`,
       title: item.title,
       description: truncate(item.summary || item.body, 140),
       badge: `${getChannelContentCategoryLabel(item.category)} - ${getChannelContentAccessLabel(item.accessLevel)}`,
     })),
-    ...matchedPosts.slice(0, 2).map((item) => ({
+    ...rankedPosts.slice(0, 2).map((item) => ({
       href: `/blog/${item.slug}`,
       title: item.title,
       description: truncate(item.excerpt || item.content, 140),
@@ -222,13 +282,13 @@ export async function POST(req: Request) {
           .filter(Boolean)
           .join("\n")
       : null,
-    matchedContents.length
-      ? `Conteudos relacionados encontrados: ${matchedContents
+    rankedContents.length
+      ? `Conteudos relacionados encontrados: ${rankedContents
           .map((item) => `${item.title} (${getChannelContentCategoryLabel(item.category)})`)
           .join("; ")}.`
       : null,
-    matchedPosts.length
-      ? `Leituras do blog relacionadas: ${matchedPosts.map((item) => item.title).join("; ")}.`
+    rankedPosts.length
+      ? `Leituras do blog relacionadas: ${rankedPosts.map((item) => item.title).join("; ")}.`
       : null,
   ]
     .filter(Boolean)

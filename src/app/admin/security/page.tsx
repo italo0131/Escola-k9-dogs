@@ -1,12 +1,12 @@
 ﻿import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import { requireUser } from "@/lib/auth"
-import { isRootRole } from "@/lib/role"
+import { isAdminRole } from "@/lib/role"
 import { redirect } from "next/navigation"
 
 export default async function AdminSecurityPage() {
   const session = await requireUser()
-  if (!isRootRole(session.user.role)) {
+  if (!isAdminRole(session.user.role)) {
     redirect("/dashboard")
   }
 

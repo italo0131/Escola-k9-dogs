@@ -1,11 +1,24 @@
-﻿import { prisma } from "@/lib/prisma"
+import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import { requireUser } from "@/lib/auth"
 import { isRootRole } from "@/lib/role"
 import { redirect } from "next/navigation"
 
+type AdminFinanceSearchParams = {
+  event?: string | string[]
+}
+
 type Props = {
-  searchParams?: { event?: string }
+  searchParams?: Promise<AdminFinanceSearchParams> | AdminFinanceSearchParams
+}
+
+async function resolveSearchParams(input?: Promise<AdminFinanceSearchParams> | AdminFinanceSearchParams) {
+  return (await input) || {}
+}
+
+function getSingleParam(value?: string | string[]) {
+  if (Array.isArray(value)) return String(value[0] || "")
+  return String(value || "")
 }
 
 export default async function AdminFinancePage({ searchParams }: Props) {
@@ -23,17 +36,19 @@ export default async function AdminFinancePage({ searchParams }: Props) {
     .filter((p) => (p.status || "").toLowerCase() === "paid")
     .reduce((sum, p) => sum + (p.amount || 0), 0)
 
-  const selected = searchParams?.event ? payments.find((p) => p.id === searchParams.event) : null
+  const resolvedSearchParams = await resolveSearchParams(searchParams)
+  const selectedEventId = getSingleParam(resolvedSearchParams.event)
+  const selected = selectedEventId ? payments.find((p) => p.id === selectedEventId) : null
 
   return (
-    <div className="min-h-[100svh] bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 px-4 sm:px-6 py-10 text-white">
-      <div className="max-w-6xl mx-auto space-y-6">
+    <div className="min-h-[100svh] bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 px-4 py-10 text-white sm:px-6">
+      <div className="mx-auto max-w-6xl space-y-6">
         <div>
           <h1 className="text-2xl font-semibold">Financeiro</h1>
           <p className="text-sm text-gray-300">Eventos reais recebidos do Stripe.</p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Stat title="Eventos" value={payments.length} href="/admin/finance" />
           <Stat title="Total pago (centavos)" value={totalPaid} href="/admin/finance" />
           <Stat title="Ultimos 50 eventos" value={payments.length} href="/admin/finance" />
@@ -46,11 +61,11 @@ export default async function AdminFinancePage({ searchParams }: Props) {
                 <p className="text-sm text-gray-300">Detalhes do evento</p>
                 <p className="text-lg font-semibold">{selected.type}</p>
               </div>
-              <Link href="/admin/finance" className="text-cyan-300 text-sm hover:underline underline-offset-4">
+              <Link href="/admin/finance" className="text-cyan-300 text-sm underline-offset-4 hover:underline">
                 Fechar
               </Link>
             </div>
-            <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-gray-300">
+            <div className="mt-3 grid grid-cols-1 gap-3 text-sm text-gray-300 sm:grid-cols-2">
               <div>Status: {selected.status || "-"}</div>
               <div>Valor: {selected.amount ?? "-"}</div>
               <div>Moeda: {selected.currency || "-"}</div>
@@ -115,7 +130,7 @@ function Stat({ title, value, href }: { title: string; value: number; href?: str
   )
   if (!href) return content
   return (
-    <Link href={href} className="block hover:-translate-y-0.5 transition">
+    <Link href={href} className="block transition hover:-translate-y-0.5">
       {content}
     </Link>
   )

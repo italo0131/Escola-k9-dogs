@@ -4,7 +4,7 @@ import ReplyForm from "./ReplyForm"
 import { requireUser } from "@/lib/auth"
 import { formatChannelLocation, formatDateRange } from "@/lib/community"
 import { getRoleLabel, isAdminRole } from "@/lib/role"
-import { getForumPostTypeLabel, hasPremiumPlatformAccess } from "@/lib/platform"
+import { getForumPostTypeLabel } from "@/lib/platform"
 import VideoEmbed from "@/app/components/VideoEmbed"
 import EngagementBar from "@/app/components/EngagementBar"
 import SafeImage from "@/app/components/SafeImage"
@@ -12,7 +12,6 @@ import SafeImage from "@/app/components/SafeImage"
 export default async function ForumThreadPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const session = await requireUser()
-  const hasPremiumAccess = hasPremiumPlatformAccess(session.user.plan, session.user.role, session.user.planStatus)
   const thread = await prisma.forumThread.findUnique({
     where: { id },
     include: {
@@ -46,6 +45,7 @@ export default async function ForumThreadPage({ params }: { params: Promise<{ id
 
   if (
     thread.channel &&
+    !thread.channel.isPublic &&
     thread.channel.ownerId !== session.user.id &&
     !isAdminRole(session.user.role) &&
     thread.channel.subscriptions.length === 0
@@ -53,7 +53,7 @@ export default async function ForumThreadPage({ params }: { params: Promise<{ id
     return (
       <div className="min-h-[100svh] flex items-center justify-center px-4 text-white sm:px-6">
         <div className="max-w-xl rounded-[28px] border border-white/10 bg-white/5 p-8 text-center">
-          <h1 className="text-2xl font-semibold">Assine o canal para abrir este post</h1>
+          <h1 className="text-2xl font-semibold">Esse canal privado ainda nao foi liberado para voce</h1>
           <p className="mt-3 text-slate-300">
             Este post faz parte do canal <strong>{thread.channel.name}</strong>.
           </p>
@@ -76,7 +76,7 @@ export default async function ForumThreadPage({ params }: { params: Promise<{ id
       },
     },
   })
-  const canInteractWithThread = hasPremiumAccess
+  const canInteractWithThread = true
 
   return (
     <div className="min-h-[100svh] bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.12),transparent_24%),linear-gradient(145deg,#020617,#0f172a_55%,#020617)] px-4 py-10 text-white sm:px-6">
@@ -147,8 +147,8 @@ export default async function ForumThreadPage({ params }: { params: Promise<{ id
                   conversationCount={thread._count.replies}
                   conversationLabel="Comentarios"
                   canInteract={canInteractWithThread}
-                  lockedHref="/billing?locked=/forum"
-                  lockedLabel="Ativar plano para curtir"
+                  lockedHref="/forum"
+                  lockedLabel="Entre na conversa"
                 />
               </div>
 
@@ -224,7 +224,7 @@ export default async function ForumThreadPage({ params }: { params: Promise<{ id
             canReply={canInteractWithThread}
             blockedMessage="Seu plano atual permite ler este post, mas para responder no forum voce precisa ativar um plano pago."
             actionHref="/billing?locked=/forum"
-            actionLabel="Ativar Starter ou Pro"
+            actionLabel="Ativar plano Pago"
           />
         </section>
       </div>

@@ -2,34 +2,20 @@ import { prisma } from "@/lib/prisma"
 import Link from "next/link"
 import { requireUser, isStaffSession } from "@/lib/auth"
 import { getRoleLabel, isProfessionalRole } from "@/lib/role"
-import { formatMoney } from "@/lib/community"
 import {
-  getAccountPlanDescription,
-  getAccountPlanLabel,
   getChannelContentAccessLabel,
   getChannelContentCategoryLabel,
   getChannelContentTypeLabel,
 } from "@/lib/platform"
+import { getCourseAccess } from "@/lib/course-access"
 
 export default async function ConteudosPage() {
   const session = await requireUser()
   const isStaff = isStaffSession(session)
   const isProfessional = isProfessionalRole(session.user.role)
+  const access = await getCourseAccess(session)
+  const allowedTokens = Array.from(access.allowedContentIds)
 
-  const subscriptions = await prisma.channelSubscription.findMany({
-    where: { userId: session.user.id, status: "ACTIVE" },
-    include: {
-      channel: {
-        include: {
-          owner: true,
-          _count: { select: { contents: true, threads: true, subscriptions: true } },
-        },
-      },
-    },
-    orderBy: { startedAt: "desc" },
-  })
-
-  const subscribedChannelIds = subscriptions.map((item) => item.channelId)
   const contentWhere = isStaff
     ? session.user.role === "ADMIN" || session.user.role === "ROOT" || session.user.role === "SUPERADMIN"
       ? { published: true }
@@ -37,17 +23,31 @@ export default async function ConteudosPage() {
           published: true,
           OR: [{ authorId: session.user.id }, { channel: { ownerId: session.user.id } }],
         }
-    : {
-        published: true,
-        OR: [{ accessLevel: "FREE" }, { channelId: { in: subscribedChannelIds.length ? subscribedChannelIds : ["__no_channel__"] } }],
-      }
+    : access.allowAll
+      ? { published: true }
+      : allowedTokens.length
+        ? {
+            published: true,
+            OR: [
+              { accessLevel: "FREE" },
+              { id: { in: allowedTokens } },
+              { slug: { in: allowedTokens } },
+              { channelId: { in: allowedTokens } },
+            ],
+          }
+        : { published: true, accessLevel: "FREE" }
 
-  const [contents, blogPosts, recentTrainings, schedules, me] = await Promise.all([
+  const [contents, blogPosts, recentTrainings, schedules, moduleCount] = await Promise.all([
     prisma.channelContent.findMany({
       where: contentWhere,
       include: {
         author: true,
-        channel: { include: { owner: true } },
+        channel: {
+          include: {
+            owner: true,
+            _count: { select: { contents: true, threads: true } },
+          },
+        },
       },
       orderBy: [{ orderIndex: "asc" }, { createdAt: "desc" }],
       take: 12,
@@ -70,17 +70,20 @@ export default async function ConteudosPage() {
       include: { dog: true, user: true },
       take: 4,
     }),
-    prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { plan: true, planStatus: true, role: true, emailVerifiedAt: true },
+    prisma.module.count({
+      where: { users: { some: { id: session.user.id } } },
     }),
   ])
 
   const accessibleLabel = isStaff
     ? "Sua biblioteca de publicacao e entrega"
-    : subscriptions.length > 0
-      ? "Conteudos liberados pelos canais que voce assinou"
-      : "Conteudos abertos da plataforma e espaco para assinar seu adestrador"
+    : access.allowAll || access.allowedContentIds.size > 0
+      ? "Conteudos liberados pela equipe K9"
+      : "Conteudos abertos da plataforma. Fale com a equipe para liberar sua trilha"
+
+  const visibleChannels = Array.from(
+    new Map(contents.map((content) => [content.channelId, content.channel])).values(),
+  )
 
   return (
     <div className="min-h-[100svh] bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.12),transparent_24%),linear-gradient(145deg,#020617,#0f172a_55%,#020617)] px-4 py-10 text-white sm:px-6">
@@ -120,13 +123,9 @@ export default async function ConteudosPage() {
           </div>
 
           <div className="mt-8 grid gap-4 md:grid-cols-4">
-            <MetricCard title="Plano" value={getAccountPlanLabel(me?.plan)} description={getAccountPlanDescription(me?.plan)} />
-            <MetricCard
-              title="Perfil"
-              value={getRoleLabel(me?.role)}
-              description={me?.emailVerifiedAt ? "Email confirmado e conta pronta" : "Confirme o email para reforcar a seguranca"}
-            />
-            <MetricCard title="Canais assinados" value={String(subscriptions.length)} description="Fontes ativas de treino e acompanhamento" />
+            <MetricCard title="Modulos ativos" value={String(moduleCount)} description="Acessos liberados para sua conta" />
+            <MetricCard title="Perfil" value={getRoleLabel(session.user.role)} description="Conta ativa para acompanhar sua rotina" />
+            <MetricCard title="Trilhas liberadas" value={String(visibleChannels.length)} description="Fontes ativas de treino e acompanhamento" />
             <MetricCard title="Conteudos disponiveis" value={String(contents.length)} description="Aulas, guias, checklists e videos liberados" />
           </div>
         </section>
@@ -135,7 +134,7 @@ export default async function ConteudosPage() {
           <div className="rounded-[28px] border border-white/10 bg-white/6 p-6 shadow-lg shadow-black/30">
             <div className="mb-4 flex items-center justify-between">
               <div>
-                <p className="text-sm uppercase tracking-[0.2em] text-cyan-200/80">Trilha assinada</p>
+                <p className="text-sm uppercase tracking-[0.2em] text-cyan-200/80">Trilha liberada</p>
                 <h2 className="text-2xl font-semibold">Biblioteca do seu momento</h2>
               </div>
               <span className="text-sm text-slate-400">{contents.length} itens</span>
@@ -143,7 +142,7 @@ export default async function ConteudosPage() {
 
               {contents.length === 0 && (
                 <div className="rounded-2xl border border-dashed border-white/15 bg-white/5 p-6 text-slate-300">
-                  Nenhum conteudo liberado ainda. Assine um canal no forum para montar sua rotina de estudo.
+                  Nenhum conteudo liberado ainda. A equipe K9 libera as aulas conforme o seu acompanhamento.
                 </div>
               )}
 
@@ -193,27 +192,25 @@ export default async function ConteudosPage() {
                 </Link>
               </div>
 
-              {subscriptions.length === 0 && <p className="text-sm text-slate-300">Voce ainda nao assinou um canal.</p>}
+              {visibleChannels.length === 0 && <p className="text-sm text-slate-300">Nenhuma trilha liberada ainda.</p>}
 
               <div className="space-y-3">
-                {subscriptions.map((subscription) => (
+                {visibleChannels.map((channel) => (
                   <Link
-                    key={subscription.id}
-                    href={`/forum/channels/${subscription.channel.slug}`}
+                    key={channel.id}
+                    href={`/forum/channels/${channel.slug}`}
                     className="block rounded-2xl border border-white/10 bg-white/5 p-4 transition hover:bg-white/10"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="text-lg font-semibold">{subscription.channel.name}</p>
-                        <p className="text-sm text-slate-300">{subscription.channel.owner.name}</p>
+                        <p className="text-lg font-semibold">{channel.name}</p>
+                        <p className="text-sm text-slate-300">{channel.owner?.name || "Equipe K9"}</p>
                       </div>
-                      <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-xs text-emerald-100">
-                        {formatMoney(subscription.channel.subscriptionPrice) || "Gratuito"}
-                      </span>
+                      <span className="rounded-full bg-emerald-500/15 px-3 py-1 text-xs text-emerald-100">Ativo</span>
                     </div>
-                    <p className="mt-2 text-sm text-slate-300">{subscription.channel.description}</p>
+                    <p className="mt-2 text-sm text-slate-300">{channel.description}</p>
                     <p className="mt-3 text-xs text-slate-400">
-                      {subscription.channel._count.contents} conteudos • {subscription.channel._count.threads} posts • {subscription.channel._count.subscriptions} assinantes
+                      {channel._count?.contents ?? 0} conteudos • {channel._count?.threads ?? 0} posts
                     </p>
                   </Link>
                 ))}
