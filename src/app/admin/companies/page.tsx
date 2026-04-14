@@ -20,7 +20,7 @@ export default async function AdminCompaniesPage() {
       <div className="max-w-6xl mx-auto space-y-4">
         <div>
           <h1 className="text-2xl font-semibold">Empresas</h1>
-          <p className="text-sm text-gray-300">Visao consolidada por empresa.</p>
+          <p className="text-sm text-gray-300">Visão consolidada por empresa.</p>
         </div>
 
         <div className="overflow-x-auto rounded-2xl border border-white/10 bg-white/5">
@@ -28,8 +28,8 @@ export default async function AdminCompaniesPage() {
             <thead className="text-gray-300">
               <tr className="border-b border-white/10">
                 <th className="p-3 text-left">Empresa</th>
-                <th className="p-3 text-left">Usuarios</th>
-                <th className="p-3 text-left">Caes</th>
+                <th className="p-3 text-left">Usuários</th>
+                <th className="p-3 text-left">Cães</th>
                 <th className="p-3 text-left">Detalhes</th>
               </tr>
             </thead>

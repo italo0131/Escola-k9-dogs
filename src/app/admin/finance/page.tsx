@@ -51,7 +51,7 @@ export default async function AdminFinancePage({ searchParams }: Props) {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Stat title="Eventos" value={payments.length} href="/admin/finance" />
           <Stat title="Total pago (centavos)" value={totalPaid} href="/admin/finance" />
-          <Stat title="Ultimos 50 eventos" value={payments.length} href="/admin/finance" />
+          <Stat title="Últimos 50 eventos" value={payments.length} href="/admin/finance" />
         </div>
 
         {selected && (
