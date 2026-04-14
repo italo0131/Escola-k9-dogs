@@ -1,3 +1,0 @@
-{
-  "/api/blog/[slug]/reactions/route": "app/api/blog/[slug]/reactions/route.js"
-}
