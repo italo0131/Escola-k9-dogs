@@ -16,6 +16,15 @@ model User {
   role                  String    @default("CLIENT")
   status                String    @default("ACTIVE")
   createdByAdmin        Boolean   @default(false)
+  zipCode               String?
+  addressStreet         String?
+  addressNumber         String?
+  addressNeighborhood   String?
+  addressCity           String?
+  addressState          String?
+  addressComplement     String?
+  addressCountry        String?
+  addressNotes          String?
   plan                  String    @default("FREE")
   planStatus            String    @default("ACTIVE")
   planActivatedAt       DateTime?
@@ -60,6 +69,8 @@ model User {
   adminCreatedDogs      Dog[]                 @relation("DogCreatedByAdmin")
   adminCreatedSchedules Schedule[]            @relation("ScheduleCreatedByAdmin")
   adminCreatedTrainings TrainingSession[]     @relation("TrainingSessionCreatedByAdmin")
+  trainingConfirmations TrainingSession[]     @relation("TrainingSessionConfirmedBy")
+  notifications         Notification[]
   payments              Payment[]
   auditLogs             AuditLog[]
   verificationCodes     VerificationCode[]
@@ -89,6 +100,7 @@ model Dog {
   id                         String            @id @default(cuid())
   name                       String
   breed                      String
+  photoUrl                   String?
   breedApiId                 String?
   breedGroup                 String?
   breedOrigin                String?
@@ -151,6 +163,11 @@ model TrainingSession {
   trainerNotes     String?
   homework         String?
   videoUrl         String?
+  confirmationNote String?
+  confirmationMediaUrl String?
+  confirmedAt      DateTime?
+  confirmedByUserId String?
+  confirmedByUser  User?    @relation("TrainingSessionConfirmedBy", fields: [confirmedByUserId], references: [id])
   progress         Int
   dogId            String
   dog              Dog      @relation(fields: [dogId], references: [id])
@@ -236,6 +253,17 @@ model AuditLog {
   targetId   String?
   metadata   String?
   createdAt  DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  title     String
+  message   String
+  link      String?
+  readAt    DateTime?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
 }
 
 model ForumChannel {

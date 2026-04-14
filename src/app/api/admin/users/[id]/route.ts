@@ -11,6 +11,15 @@ const ROOT_ONLY_ROLES = new Set(["ROOT", "SUPERADMIN"])
 type UserAdminUpdateFields = {
   name?: string
   phone?: string | null
+  zipCode?: string | null
+  addressStreet?: string | null
+  addressNumber?: string | null
+  addressNeighborhood?: string | null
+  addressCity?: string | null
+  addressState?: string | null
+  addressComplement?: string | null
+  addressCountry?: string | null
+  addressNotes?: string | null
   role?: string
   status?: string
   twoFactorEnabled?: boolean
@@ -53,6 +62,15 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   if (typeof data.name === "string") updates.name = data.name.trim()
   if (typeof data.phone === "string") updates.phone = data.phone.trim() || null
+  if (typeof data.zipCode === "string") updates.zipCode = data.zipCode.trim() || null
+  if (typeof data.addressStreet === "string") updates.addressStreet = data.addressStreet.trim() || null
+  if (typeof data.addressNumber === "string") updates.addressNumber = data.addressNumber.trim() || null
+  if (typeof data.addressNeighborhood === "string") updates.addressNeighborhood = data.addressNeighborhood.trim() || null
+  if (typeof data.addressCity === "string") updates.addressCity = data.addressCity.trim() || null
+  if (typeof data.addressState === "string") updates.addressState = data.addressState.trim() || null
+  if (typeof data.addressComplement === "string") updates.addressComplement = data.addressComplement.trim() || null
+  if (typeof data.addressCountry === "string") updates.addressCountry = data.addressCountry.trim() || null
+  if (typeof data.addressNotes === "string") updates.addressNotes = data.addressNotes.trim() || null
 
   if (typeof data.role === "string") {
     const role = data.role.toUpperCase()
