@@ -1,0 +1,411 @@
+[00:58:05.642] Server  WARN    ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:58:05.659] Server  WARN    ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:58:05.661] Server  WARN    ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[00:58:05.664] Server  LOG     ✓ Compiled in 30.9s
+[00:58:05.778] Server  ERROR   ⨯ TurbopackInternalError: Failed to write page endpoint /_app
+
+Caused by:
+- content is not available as task execution failed
+- content is not available as task execution failed
+- Failed to restore task data (corrupted database or bug): Meta for EcmascriptModuleAsset::analyze (TaskId 265841))
+
+Debug info:
+- Execution of get_written_endpoint_with_issues_operation failed
+- Execution of endpoint_write_to_disk failed
+- Execution of <PageEndpoint as Endpoint>::output failed
+- Failed to write page endpoint /_app
+- Execution of PageEndpoint::output failed
+- Execution of *ChunkGroupResult::all_assets failed
+- Execution of PageEndpoint::client_chunk_group failed
+- Execution of PageEndpoint::client_evaluatable_assets failed
+- content is not available as task execution failed
+- Execution of PageEndpoint::client_module failed
+- content is not available as task execution failed
+- Execution of create_page_loader_entry_module failed
+- Execution of *ProcessResult::module failed
+- Execution of <ModuleAssetContext as AssetContext>::process failed
+- Execution of *EcmascriptExports::split_locals_and_reexports failed
+- Execution of <EcmascriptModuleAsset as EcmascriptChunkPlaceable>::get_exports failed
+- Failed to restore task data (corrupted database or bug): Meta for EcmascriptModuleAsset::analyze (TaskId 265841))
+  
+  Caused by:
+      0: Looking up data for TaskId 265841 from database failed
+      1: Unable to open static sorted file referenced from 00000116.meta
+      2: Unable to open static sorted file 00000113.sst
+      3: No such file or directory (os error 2)
+[00:58:05.788] Server  ERROR   TurbopackInternalError: Failed to write app endpoint /blog/[slug]/page
+
+Caused by:
+- [project]/Documentos/k9-training-platform/src/app/globals.css [app-client] (css)
+- creating new process
+- node process exited before we could connect to it with exit status: 1
+
+Debug info:
+- Execution of get_written_endpoint_with_issues_operation failed
+- Execution of endpoint_write_to_disk failed
+- Execution of <AppEndpoint as Endpoint>::output failed
+- Failed to write app endpoint /blog/[slug]/page
+- Execution of AppEndpoint::output failed
+- Execution of AppProject::app_module_graphs failed
+- Execution of *<AppEndpoint as Endpoint>::additional_entries failed
+- Execution of *ModuleGraph::from_graphs failed
+- Execution of SingleModuleGraph::new_with_entries_visited_intern failed
+- [project]/Documentos/k9-training-platform/src/app/globals.css [app-client] (css)
+- Execution of primary_chunkable_referenced_modules failed
+- Execution of <CssModuleAsset as Module>::references failed
+- Execution of parse_css failed
+- Execution of <PostCssTransformedAsset as Asset>::content failed
+- Execution of PostCssTransformedAsset::process failed
+- Execution of evaluate_webpack_loader failed
+- creating new process
+- node process exited before we could connect to it with exit status: 1
+  Process output:
+  
+  Process error output:
+  node:internal/modules/cjs/loader:1215
+    throw err;
+    ^
+  
+  Error: Cannot find module '/home/italo/Documentos/k9-training-platform/.next-italo-1000/dev/build/postcss.js'
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+      at Module._load (node:internal/modules/cjs/loader:1043:27)
+      at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:164:12)
+      at node:internal/main/run_main_module:28:49 {
+    code: 'MODULE_NOT_FOUND',
+  }
+  
+  Node.js v20.19.2
+[00:58:05.807] Server  ERROR   ⨯ TurbopackInternalError: Failed to write page endpoint /_app
+
+Caused by:
+- content is not available as task execution failed
+- content is not available as task execution failed
+- Failed to restore task data (corrupted database or bug): Meta for EcmascriptModuleAsset::analyze (TaskId 265841))
+
+Debug info:
+- Execution of get_written_endpoint_with_issues_operation failed
+- Execution of endpoint_write_to_disk failed
+- Execution of <PageEndpoint as Endpoint>::output failed
+- Failed to write page endpoint /_app
+- Execution of PageEndpoint::output failed
+- Execution of *ChunkGroupResult::all_assets failed
+- Execution of PageEndpoint::client_chunk_group failed
+- Execution of PageEndpoint::client_evaluatable_assets failed
+- content is not available as task execution failed
+- Execution of PageEndpoint::client_module failed
+- content is not available as task execution failed
+- Execution of create_page_loader_entry_module failed
+- Execution of *ProcessResult::module failed
+- Execution of <ModuleAssetContext as AssetContext>::process failed
+- Execution of *EcmascriptExports::split_locals_and_reexports failed
+- Execution of <EcmascriptModuleAsset as EcmascriptChunkPlaceable>::get_exports failed
+- Failed to restore task data (corrupted database or bug): Meta for EcmascriptModuleAsset::analyze (TaskId 265841))
+  
+  Caused by:
+      0: Looking up data for TaskId 265841 from database failed
+      1: Unable to open static sorted file referenced from 00000116.meta
+      2: Unable to open static sorted file 00000113.sst
+      3: No such file or directory (os error 2)
+[00:58:05.825] Server  ERROR   TurbopackInternalError: Failed to write page endpoint /_app
+
+Caused by:
+- content is not available as task execution failed
+- content is not available as task execution failed
+- Failed to restore task data (corrupted database or bug): Meta for EcmascriptModuleAsset::analyze (TaskId 265841))
+
+Debug info:
+- Execution of get_written_endpoint_with_issues_operation failed
+- Execution of endpoint_write_to_disk failed
+- Execution of <PageEndpoint as Endpoint>::output failed
+- Failed to write page endpoint /_app
+- Execution of PageEndpoint::output failed
+- Execution of *ChunkGroupResult::all_assets failed
+- Execution of PageEndpoint::client_chunk_group failed
+- Execution of PageEndpoint::client_evaluatable_assets failed
+- content is not available as task execution failed
+- Execution of PageEndpoint::client_module failed
+- content is not available as task execution failed
+- Execution of create_page_loader_entry_module failed
+- Execution of *ProcessResult::module failed
+- Execution of <ModuleAssetContext as AssetContext>::process failed
+- Execution of *EcmascriptExports::split_locals_and_reexports failed
+- Execution of <EcmascriptModuleAsset as EcmascriptChunkPlaceable>::get_exports failed
+- Failed to restore task data (corrupted database or bug): Meta for EcmascriptModuleAsset::analyze (TaskId 265841))
+  
+  Caused by:
+      0: Looking up data for TaskId 265841 from database failed
+      1: Unable to open static sorted file referenced from 00000116.meta
+      2: Unable to open static sorted file 00000113.sst
+      3: No such file or directory (os error 2)
+[00:58:05.837] Server  ERROR   ⨯ TurbopackInternalError: Failed to write page endpoint /_app
+
+Caused by:
+- content is not available as task execution failed
+- content is not available as task execution failed
+- Failed to restore task data (corrupted database or bug): Meta for EcmascriptModuleAsset::analyze (TaskId 265841))
+
+Debug info:
+- Execution of get_written_endpoint_with_issues_operation failed
+- Execution of endpoint_write_to_disk failed
+- Execution of <PageEndpoint as Endpoint>::output failed
+- Failed to write page endpoint /_app
+- Execution of PageEndpoint::output failed
+- Execution of *ChunkGroupResult::all_assets failed
+- Execution of PageEndpoint::client_chunk_group failed
+- Execution of PageEndpoint::client_evaluatable_assets failed
+- content is not available as task execution failed
+- Execution of PageEndpoint::client_module failed
+- content is not available as task execution failed
+- Execution of create_page_loader_entry_module failed
+- Execution of *ProcessResult::module failed
+- Execution of <ModuleAssetContext as AssetContext>::process failed
+- Execution of *EcmascriptExports::split_locals_and_reexports failed
+- Execution of <EcmascriptModuleAsset as EcmascriptChunkPlaceable>::get_exports failed
+- Failed to restore task data (corrupted database or bug): Meta for EcmascriptModuleAsset::analyze (TaskId 265841))
+  
+  Caused by:
+      0: Looking up data for TaskId 265841 from database failed
+      1: Unable to open static sorted file referenced from 00000116.meta
+      2: Unable to open static sorted file 00000113.sst
+      3: No such file or directory (os error 2)
+[00:58:05.854] Server  ERROR   TurbopackInternalError: Failed to write app endpoint /page
+
+Caused by:
+- [project]/Documentos/k9-training-platform/src/app/globals.css [app-client] (css)
+- creating new process
+- node process exited before we could connect to it with exit status: 1
+
+Debug info:
+- Execution of get_written_endpoint_with_issues_operation failed
+- Execution of endpoint_write_to_disk failed
+- Execution of <AppEndpoint as Endpoint>::output failed
+- Failed to write app endpoint /page
+- Execution of AppEndpoint::output failed
+- Execution of AppProject::app_module_graphs failed
+- Execution of *<AppEndpoint as Endpoint>::additional_entries failed
+- Execution of *ModuleGraph::from_graphs failed
+- Execution of SingleModuleGraph::new_with_entries_visited_intern failed
+- [project]/Documentos/k9-training-platform/src/app/globals.css [app-client] (css)
+- Execution of primary_chunkable_referenced_modules failed
+- Execution of <CssModuleAsset as Module>::references failed
+- Execution of parse_css failed
+- Execution of <PostCssTransformedAsset as Asset>::content failed
+- Execution of PostCssTransformedAsset::process failed
+- Execution of evaluate_webpack_loader failed
+- creating new process
+- node process exited before we could connect to it with exit status: 1
+  Process output:
+  
+  Process error output:
+  node:internal/modules/cjs/loader:1215
+    throw err;
+    ^
+  
+  Error: Cannot find module '/home/italo/Documentos/k9-training-platform/.next-italo-1000/dev/build/postcss.js'
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+      at Module._load (node:internal/modules/cjs/loader:1043:27)
+      at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:164:12)
+      at node:internal/main/run_main_module:28:49 {
+    code: 'MODULE_NOT_FOUND',
+  }
+  
+  Node.js v20.19.2
+[00:58:05.868] Server  ERROR   ⨯ TurbopackInternalError: Failed to write page endpoint /_app
+
+Caused by:
+- content is not available as task execution failed
+- content is not available as task execution failed
+- Failed to restore task data (corrupted database or bug): Meta for EcmascriptModuleAsset::analyze (TaskId 265841))
+
+Debug info:
+- Execution of get_written_endpoint_with_issues_operation failed
+- Execution of endpoint_write_to_disk failed
+- Execution of <PageEndpoint as Endpoint>::output failed
+- Failed to write page endpoint /_app
+- Execution of PageEndpoint::output failed
+- Execution of *ChunkGroupResult::all_assets failed
+- Execution of PageEndpoint::client_chunk_group failed
+- Execution of PageEndpoint::client_evaluatable_assets failed
+- content is not available as task execution failed
+- Execution of PageEndpoint::client_module failed
+- content is not available as task execution failed
+- Execution of create_page_loader_entry_module failed
+- Execution of *ProcessResult::module failed
+- Execution of <ModuleAssetContext as AssetContext>::process failed
+- Execution of *EcmascriptExports::split_locals_and_reexports failed
+- Execution of <EcmascriptModuleAsset as EcmascriptChunkPlaceable>::get_exports failed
+- Failed to restore task data (corrupted database or bug): Meta for EcmascriptModuleAsset::analyze (TaskId 265841))
+  
+  Caused by:
+      0: Looking up data for TaskId 265841 from database failed
+      1: Unable to open static sorted file referenced from 00000116.meta
+      2: Unable to open static sorted file 00000113.sst
+      3: No such file or directory (os error 2)
+[00:58:05.875] Server  ERROR   ⨯ TurbopackInternalError: Failed to write page endpoint /_app
+
+Caused by:
+- content is not available as task execution failed
+- content is not available as task execution failed
+- Failed to restore task data (corrupted database or bug): Meta for EcmascriptModuleAsset::analyze (TaskId 265841))
+
+Debug info:
+- Execution of get_written_endpoint_with_issues_operation failed
+- Execution of endpoint_write_to_disk failed
+- Execution of <PageEndpoint as Endpoint>::output failed
+- Failed to write page endpoint /_app
+- Execution of PageEndpoint::output failed
+- Execution of *ChunkGroupResult::all_assets failed
+- Execution of PageEndpoint::client_chunk_group failed
+- Execution of PageEndpoint::client_evaluatable_assets failed
+- content is not available as task execution failed
+- Execution of PageEndpoint::client_module failed
+- content is not available as task execution failed
+- Execution of create_page_loader_entry_module failed
+- Execution of *ProcessResult::module failed
+- Execution of <ModuleAssetContext as AssetContext>::process failed
+- Execution of *EcmascriptExports::split_locals_and_reexports failed
+- Execution of <EcmascriptModuleAsset as EcmascriptChunkPlaceable>::get_exports failed
+- Failed to restore task data (corrupted database or bug): Meta for EcmascriptModuleAsset::analyze (TaskId 265841))
+  
+  Caused by:
+      0: Looking up data for TaskId 265841 from database failed
+      1: Unable to open static sorted file referenced from 00000116.meta
+      2: Unable to open static sorted file 00000113.sst
+      3: No such file or directory (os error 2)
+[00:58:05.879] Server  ERROR   TurbopackInternalError: Failed to write page endpoint /_app
+
+Caused by:
+- content is not available as task execution failed
+- content is not available as task execution failed
+- Failed to restore task data (corrupted database or bug): Meta for EcmascriptModuleAsset::analyze (TaskId 265841))
+
+Debug info:
+- Execution of get_written_endpoint_with_issues_operation failed
+- Execution of endpoint_write_to_disk failed
+- Execution of <PageEndpoint as Endpoint>::output failed
+- Failed to write page endpoint /_app
+- Execution of PageEndpoint::output failed
+- Execution of *ChunkGroupResult::all_assets failed
+- Execution of PageEndpoint::client_chunk_group failed
+- Execution of PageEndpoint::client_evaluatable_assets failed
+- content is not available as task execution failed
+- Execution of PageEndpoint::client_module failed
+- content is not available as task execution failed
+- Execution of create_page_loader_entry_module failed
+- Execution of *ProcessResult::module failed
+- Execution of <ModuleAssetContext as AssetContext>::process failed
+- Execution of *EcmascriptExports::split_locals_and_reexports failed
+- Execution of <EcmascriptModuleAsset as EcmascriptChunkPlaceable>::get_exports failed
+- Failed to restore task data (corrupted database or bug): Meta for EcmascriptModuleAsset::analyze (TaskId 265841))
+  
+  Caused by:
+      0: Looking up data for TaskId 265841 from database failed
+      1: Unable to open static sorted file referenced from 00000116.meta
+      2: Unable to open static sorted file 00000113.sst
+      3: No such file or directory (os error 2)
+[00:58:05.888] Server  ERROR   TurbopackInternalError: Failed to write app endpoint /blog/[slug]/page
+
+Caused by:
+- [project]/Documentos/k9-training-platform/src/app/globals.css [app-client] (css)
+- creating new process
+- node process exited before we could connect to it with exit status: 1
+
+Debug info:
+- Execution of get_written_endpoint_with_issues_operation failed
+- Execution of endpoint_write_to_disk failed
+- Execution of <AppEndpoint as Endpoint>::output failed
+- Failed to write app endpoint /blog/[slug]/page
+- Execution of AppEndpoint::output failed
+- Execution of AppProject::app_module_graphs failed
+- Execution of *<AppEndpoint as Endpoint>::additional_entries failed
+- Execution of *ModuleGraph::from_graphs failed
+- Execution of SingleModuleGraph::new_with_entries_visited_intern failed
+- [project]/Documentos/k9-training-platform/src/app/globals.css [app-client] (css)
+- Execution of primary_chunkable_referenced_modules failed
+- Execution of <CssModuleAsset as Module>::references failed
+- Execution of parse_css failed
+- Execution of <PostCssTransformedAsset as Asset>::content failed
+- Execution of PostCssTransformedAsset::process failed
+- Execution of evaluate_webpack_loader failed
+- creating new process
+- node process exited before we could connect to it with exit status: 1
+  Process output:
+  
+  Process error output:
+  node:internal/modules/cjs/loader:1215
+    throw err;
+    ^
+  
+  Error: Cannot find module '/home/italo/Documentos/k9-training-platform/.next-italo-1000/dev/build/postcss.js'
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1212:15)
+      at Module._load (node:internal/modules/cjs/loader:1043:27)
+      at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:164:12)
+      at node:internal/main/run_main_module:28:49 {
+    code: 'MODULE_NOT_FOUND',
+  }
+  
+  Node.js v20.19.2
+[00:58:05.904] Server  ERROR   ⨯ TurbopackInternalError: Failed to write page endpoint /_app
+
+Caused by:
+- content is not available as task execution failed
+- content is not available as task execution failed
+- Failed to restore task data (corrupted database or bug): Meta for EcmascriptModuleAsset::analyze (TaskId 265841))
+
+Debug info:
+- Execution of get_written_endpoint_with_issues_operation failed
+- Execution of endpoint_write_to_disk failed
+- Execution of <PageEndpoint as Endpoint>::output failed
+- Failed to write page endpoint /_app
+- Execution of PageEndpoint::output failed
+- Execution of *ChunkGroupResult::all_assets failed
+- Execution of PageEndpoint::client_chunk_group failed
+- Execution of PageEndpoint::client_evaluatable_assets failed
+- content is not available as task execution failed
+- Execution of PageEndpoint::client_module failed
+- content is not available as task execution failed
+- Execution of create_page_loader_entry_module failed
+- Execution of *ProcessResult::module failed
+- Execution of <ModuleAssetContext as AssetContext>::process failed
+- Execution of *EcmascriptExports::split_locals_and_reexports failed
+- Execution of <EcmascriptModuleAsset as EcmascriptChunkPlaceable>::get_exports failed
+- Failed to restore task data (corrupted database or bug): Meta for EcmascriptModuleAsset::analyze (TaskId 265841))
+  
+  Caused by:
+      0: Looking up data for TaskId 265841 from database failed
+      1: Unable to open static sorted file referenced from 00000116.meta
+      2: Unable to open static sorted file 00000113.sst
+      3: No such file or directory (os error 2)
+[00:58:05.916] Server  ERROR   TurbopackInternalError: Failed to write page endpoint /_app
+
+Caused by:
+- content is not available as task execution failed
+- content is not available as task execution failed
+- Failed to restore task data (corrupted database or bug): Meta for EcmascriptModuleAsset::analyze (TaskId 265841))
+
+Debug info:
+- Execution of get_written_endpoint_with_issues_operation failed
+- Execution of endpoint_write_to_disk failed
+- Execution of <PageEndpoint as Endpoint>::output failed
+- Failed to write page endpoint /_app
+- Execution of PageEndpoint::output failed
+- Execution of *ChunkGroupResult::all_assets failed
+- Execution of PageEndpoint::client_chunk_group failed
+- Execution of PageEndpoint::client_evaluatable_assets failed
+- content is not available as task execution failed
+- Execution of PageEndpoint::client_module failed
+- content is not available as task execution failed
+- Execution of create_page_loader_entry_module failed
+- Execution of *ProcessResult::module failed
+- Execution of <ModuleAssetContext as AssetContext>::process failed
+- Execution of *EcmascriptExports::split_locals_and_reexports failed
+- Execution of <EcmascriptModuleAsset as EcmascriptChunkPlaceable>::get_exports failed
+- Failed to restore task data (corrupted database or bug): Meta for EcmascriptModuleAsset::analyze (TaskId 265841))
+  
+  Caused by:
+      0: Looking up data for TaskId 265841 from database failed
+      1: Unable to open static sorted file referenced from 00000116.meta
+      2: Unable to open static sorted file 00000113.sst
+      3: No such file or directory (os error 2)
+[01:07:16.051] Server  LOG       Reload env: .env
+[01:28:05.329] Server  LOG       Reload env: .env
