@@ -325,10 +325,7 @@ export async function recognizeDogBreedFromImage(file: File) {
 
   return { imageId: String(uploadedImage.id), breed: null, raw: labelsPayload, capability: "LABELS_ENABLED" as const }
 }
+
 export async function getDogBreedById(id: string): Promise<DogBreedLookup> {
-  const res = await fetch(`https://api.thedogapi.com/v1/breeds/${id}`, {
-    headers: { "x-api-key": process.env.DOG_API_KEY! },
-  });
-  if (!res.ok) throw new Error("Raça não encontrada");
-  return res.json();
+  return getDogBreed(String(id))
 }
