@@ -1,7 +1,7 @@
 var R=require("../../../chunks/[turbopack]_runtime.js")("server/app/api/content/route.js")
-R.c("server/chunks/[root-of-the-server]__769ca5f8._.js")
-R.c("server/chunks/_eb728e01._.js")
-R.c("server/chunks/[root-of-the-server]__f408c708._.js")
-R.c("server/chunks/_next-internal_server_app_api_content_route_actions_a6da596e.js")
-R.m(4129)
-module.exports=R.m(4129).exports
+R.c("server/chunks/[root-of-the-server]__58c9e705._.js")
+R.c("server/chunks/Documentos_k9-training-platform_bf3086a8._.js")
+R.c("server/chunks/[root-of-the-server]__5b24005c._.js")
+R.c("server/chunks/0d622__next-internal_server_app_api_content_route_actions_0850ef86.js")
+R.m(31229)
+module.exports=R.m(31229).exports

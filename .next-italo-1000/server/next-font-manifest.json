@@ -1,192 +1,192 @@
 {
   "app": {
-    "[project]/src/app/_not-found/page": [
+    "[project]/Documentos/k9-training-platform/src/app/_not-found/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/admin/approvals/page": [
+    "[project]/Documentos/k9-training-platform/src/app/admin/approvals/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/admin/clients/[clientId]/page": [
+    "[project]/Documentos/k9-training-platform/src/app/admin/clients/[clientId]/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/admin/clients/page": [
+    "[project]/Documentos/k9-training-platform/src/app/admin/clients/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/admin/companies/[companyId]/page": [
+    "[project]/Documentos/k9-training-platform/src/app/admin/companies/[companyId]/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/admin/companies/page": [
+    "[project]/Documentos/k9-training-platform/src/app/admin/companies/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/admin/courses/new/page": [
+    "[project]/Documentos/k9-training-platform/src/app/admin/courses/new/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/admin/courses/page": [
+    "[project]/Documentos/k9-training-platform/src/app/admin/courses/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/admin/dogs/[dogId]/page": [
+    "[project]/Documentos/k9-training-platform/src/app/admin/dogs/[dogId]/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/admin/dogs/page": [
+    "[project]/Documentos/k9-training-platform/src/app/admin/dogs/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/admin/finance/page": [
+    "[project]/Documentos/k9-training-platform/src/app/admin/finance/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/admin/modules/page": [
+    "[project]/Documentos/k9-training-platform/src/app/admin/modules/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/admin/page": [
+    "[project]/Documentos/k9-training-platform/src/app/admin/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/admin/schedule/page": [
+    "[project]/Documentos/k9-training-platform/src/app/admin/schedule/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/admin/security/page": [
+    "[project]/Documentos/k9-training-platform/src/app/admin/security/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/admin/trainings/page": [
+    "[project]/Documentos/k9-training-platform/src/app/admin/trainings/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/admin/traninings/news/page": [
+    "[project]/Documentos/k9-training-platform/src/app/admin/traninings/news/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/admin/traninings/page": [
+    "[project]/Documentos/k9-training-platform/src/app/admin/traninings/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/admin/users/[userId]/page": [
+    "[project]/Documentos/k9-training-platform/src/app/admin/users/[userId]/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/admin/users/page": [
+    "[project]/Documentos/k9-training-platform/src/app/admin/users/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/agendamento/page": [
+    "[project]/Documentos/k9-training-platform/src/app/agendamento/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/billing/page": [
+    "[project]/Documentos/k9-training-platform/src/app/billing/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/blog/[slug]/page": [
+    "[project]/Documentos/k9-training-platform/src/app/blog/[slug]/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/blog/new/page": [
+    "[project]/Documentos/k9-training-platform/src/app/blog/new/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/blog/page": [
+    "[project]/Documentos/k9-training-platform/src/app/blog/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/calendar/new/page": [
+    "[project]/Documentos/k9-training-platform/src/app/calendar/new/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/calendar/page": [
+    "[project]/Documentos/k9-training-platform/src/app/calendar/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/contato/page": [
+    "[project]/Documentos/k9-training-platform/src/app/contato/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/conteudos/[slug]/page": [
+    "[project]/Documentos/k9-training-platform/src/app/conteudos/[slug]/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/conteudos/new/page": [
+    "[project]/Documentos/k9-training-platform/src/app/conteudos/new/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/conteudos/page": [
+    "[project]/Documentos/k9-training-platform/src/app/conteudos/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/courses/[courseId]/page": [
+    "[project]/Documentos/k9-training-platform/src/app/courses/[courseId]/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/courses/page": [
+    "[project]/Documentos/k9-training-platform/src/app/courses/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/dashboard/dogs/[dogId]/page": [
+    "[project]/Documentos/k9-training-platform/src/app/dashboard/dogs/[dogId]/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/dashboard/dogs/page": [
+    "[project]/Documentos/k9-training-platform/src/app/dashboard/dogs/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/dashboard/page": [
+    "[project]/Documentos/k9-training-platform/src/app/dashboard/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/data-policy/page": [
+    "[project]/Documentos/k9-training-platform/src/app/data-policy/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/dogs/[id]/edit/page": [
+    "[project]/Documentos/k9-training-platform/src/app/dogs/[id]/edit/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/dogs/new/page": [
+    "[project]/Documentos/k9-training-platform/src/app/dogs/new/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/dogs/page": [
+    "[project]/Documentos/k9-training-platform/src/app/dogs/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/estrutura/page": [
+    "[project]/Documentos/k9-training-platform/src/app/estrutura/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/forum/[id]/page": [
+    "[project]/Documentos/k9-training-platform/src/app/forum/[id]/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/forum/channels/[slug]/page": [
+    "[project]/Documentos/k9-training-platform/src/app/forum/channels/[slug]/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/forum/channels/new/page": [
+    "[project]/Documentos/k9-training-platform/src/app/forum/channels/new/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/forum/new/page": [
+    "[project]/Documentos/k9-training-platform/src/app/forum/new/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/forum/page": [
+    "[project]/Documentos/k9-training-platform/src/app/forum/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/forum/rules/page": [
+    "[project]/Documentos/k9-training-platform/src/app/forum/rules/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/login/page": [
+    "[project]/Documentos/k9-training-platform/src/app/login/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/page": [
+    "[project]/Documentos/k9-training-platform/src/app/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/profile/edit/page": [
+    "[project]/Documentos/k9-training-platform/src/app/profile/edit/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/profile/page": [
+    "[project]/Documentos/k9-training-platform/src/app/profile/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/racas/[id]/page": [
+    "[project]/Documentos/k9-training-platform/src/app/racas/[id]/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/racas/comparador/page": [
+    "[project]/Documentos/k9-training-platform/src/app/racas/comparador/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/racas/page": [
+    "[project]/Documentos/k9-training-platform/src/app/racas/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/racas/radar/page": [
+    "[project]/Documentos/k9-training-platform/src/app/racas/radar/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/register/page": [
+    "[project]/Documentos/k9-training-platform/src/app/register/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/servicos/page": [
+    "[project]/Documentos/k9-training-platform/src/app/servicos/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/sobre/page": [
+    "[project]/Documentos/k9-training-platform/src/app/sobre/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/training/[sessionId]/page": [
+    "[project]/Documentos/k9-training-platform/src/app/training/[sessionId]/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/training/new/page": [
+    "[project]/Documentos/k9-training-platform/src/app/training/new/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/training/page": [
+    "[project]/Documentos/k9-training-platform/src/app/training/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/unauthorized/page": [
+    "[project]/Documentos/k9-training-platform/src/app/unauthorized/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ],
-    "[project]/src/app/verify/page": [
+    "[project]/Documentos/k9-training-platform/src/app/verify/page": [
       "static/media/0c89a48fa5027cee-s.p.4564287c.woff2"
     ]
   },

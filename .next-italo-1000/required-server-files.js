@@ -100,7 +100,7 @@ self.__SERVER_FILES_MANIFEST={
         "transform": "lodash/{{member}}"
       }
     },
-    "outputFileTracingRoot": "/home/italo/Documentos/k9-training-platform",
+    "outputFileTracingRoot": "/home/italo",
     "cacheComponents": false,
     "cacheLife": {
       "default": {
@@ -293,12 +293,12 @@ self.__SERVER_FILES_MANIFEST={
     "bundlePagesRouterDependencies": false,
     "configFileName": "next.config.js",
     "turbopack": {
-      "root": "/home/italo/Documentos/k9-training-platform"
+      "root": "/home/italo"
     },
     "distDirRoot": ".next-italo-1000"
   },
   "appDir": "/home/italo/Documentos/k9-training-platform",
-  "relativeAppDir": "",
+  "relativeAppDir": "Documentos/k9-training-platform",
   "files": [
     ".next-italo-1000/routes-manifest.json",
     ".next-italo-1000/server/pages-manifest.json",

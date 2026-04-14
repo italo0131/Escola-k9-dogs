@@ -1,0 +1,3 @@
+module.exports=[93695,(a,b,c)=>{b.exports=a.x("next/dist/shared/lib/no-fallback-error.external.js",()=>require("next/dist/shared/lib/no-fallback-error.external.js"))},88639,a=>{a.n(a.i(69989))},40617,a=>{a.n(a.i(75515))},31252,a=>{a.n(a.i(22826))},48951,a=>{a.n(a.i(42797))},4172,a=>{a.n(a.i(30186))},13371,a=>{a.n(a.i(2526))},56539,a=>{a.n(a.i(78345))},24265,a=>{"use strict";var b=a.i(83904);function c(){return(0,b.jsxs)("div",{className:"min-h-[100svh] bg-slate-950 text-white px-4 sm:px-6 py-10",children:[(0,b.jsx)("h1",{className:"text-3xl font-semibold",children:"Admin - Treinos"}),(0,b.jsx)("p",{className:"text-gray-300 mt-2",children:"Gestao de treinos. Em construcao."})]})}a.s(["default",()=>c])}];
+
+//# sourceMappingURL=%5Broot-of-the-server%5D__b3a841ca._.js.map

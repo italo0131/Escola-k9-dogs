@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma migrate deploy && next build",
+    "build": "next build",
     "start": "next start -H 0.0.0.0",
     "lint": "eslint",
     "postinstall": "prisma generate",
@@ -12,6 +12,8 @@
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
+    "@supabase/ssr": "^0.10.2",
+    "@supabase/supabase-js": "^2.103.0",
     "autoprefixer": "^10.4.27",
     "bcrypt": "^6.0.0",
     "framer-motion": "^12.38.0",
