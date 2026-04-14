@@ -46,12 +46,12 @@ export default async function AdminSecurityPage() {
     <div className="min-h-[100svh] bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 px-4 sm:px-6 py-10 text-white">
       <div className="max-w-6xl mx-auto space-y-6">
         <div>
-          <h1 className="text-2xl font-semibold">Seguranca</h1>
-          <p className="text-sm text-gray-300">Visao geral de verificacoes e contas.</p>
+          <h1 className="text-2xl font-semibold">Segurança</h1>
+          <p className="text-sm text-gray-300">Visão geral de verificações e contas.</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Stat title="Usuarios" value={userCount} href="/admin/users" />
+          <Stat title="Usuários" value={userCount} href="/admin/users" />
           <Stat title="Emails pendentes" value={unverifiedCount} href="/admin/users" />
           <Stat title="Suspensos" value={suspendedCount} href="/admin/users" />
           <Stat title="2FA ativo" value={twoFactorCount} href="/admin/users" />
@@ -72,7 +72,7 @@ export default async function AdminSecurityPage() {
             </ul>
           </div>
           <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-            <h2 className="text-lg font-semibold">Emails nao verificados</h2>
+            <h2 className="text-lg font-semibold">Emails não verificados</h2>
             {unverifiedUsers.length === 0 && <p className="text-sm text-gray-300 mt-2">Todos verificados.</p>}
             <ul className="mt-3 space-y-2 text-sm text-gray-300">
               {unverifiedUsers.map((user) => (
@@ -87,7 +87,7 @@ export default async function AdminSecurityPage() {
         </section>
 
         <section className="rounded-2xl border border-white/10 bg-white/5 p-5">
-          <h2 className="text-lg font-semibold">Auditoria (ultimas acoes)</h2>
+          <h2 className="text-lg font-semibold">Auditoria (últimas ações)</h2>
           {auditLogs.length === 0 && <p className="text-sm text-gray-300 mt-2">Sem registros.</p>}
           <ul className="mt-3 space-y-2 text-sm text-gray-300">
             {auditLogs.map((log) => {
