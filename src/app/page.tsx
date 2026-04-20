@@ -54,11 +54,11 @@ export default async function Home() {
 
           <div className="space-y-4">
             <h1 className="max-w-4xl text-4xl font-bold leading-tight md:text-6xl">
-              Acompanhamento real de treino, rotina e progresso canino em um so lugar.
+              Acompanhamento real de treino, rotina e evolução do seu cão, tudo em um só lugar.
             </h1>
             <p className="max-w-2xl text-lg leading-8 text-slate-300">
-              A equipe K9 cria sua conta, libera os modulos corretos e acompanha a evolucao do seu cao com agenda,
-              treinos, cursos e comunidade.
+              A equipe K9 cria sua conta, libera os módulos certos para o seu caso e acompanha o progresso com
+              dedicação, treinos personalizados e suporte contínuo.
             </p>
           </div>
 
@@ -73,7 +73,7 @@ export default async function Home() {
               href="/racas"
               className="rounded-2xl border border-cyan-300/20 bg-cyan-500/10 px-6 py-4 text-sm font-medium text-cyan-100 transition hover:bg-cyan-500/20"
             >
-              Explorar racas
+              Explorar raças
             </Link>
             <Link
               href="/blog"
@@ -84,18 +84,18 @@ export default async function Home() {
           </div>
 
           <div className="grid gap-3 md:grid-cols-3">
-            <MetricPill title="Acompanhamento" value={`${snapshot.moduleCount} modulos operacionais`} />
-            <MetricPill title="Conteudo" value={`${snapshot.postCount} posts publicados`} />
-            <MetricPill title="Comunidade" value={`${snapshot.threadCount} conversas no forum`} />
+            <MetricPill title="Módulos" value={`${snapshot.moduleCount} módulos disponíveis`} />
+            <MetricPill title="Conteúdo" value={`${snapshot.postCount} artigos publicados`} />
+            <MetricPill title="Comunidade" value={`${snapshot.threadCount} conversas ativas`} />
           </div>
         </div>
 
         <div className="rounded-[36px] border border-white/10 bg-[linear-gradient(160deg,rgba(15,23,42,0.96),rgba(17,24,39,0.78)),radial-gradient(circle_at_top_right,rgba(34,197,94,0.18),transparent_30%)] p-6 shadow-2xl shadow-black/30">
           <p className="text-sm uppercase tracking-[0.2em] text-cyan-200/80">Como funciona</p>
           <div className="mt-5 grid gap-4">
-            <FlowCard step="01" title="Conta criada pela K9" description="A equipe registra seu acesso, define email, senha temporaria e os modulos liberados." />
-            <FlowCard step="02" title="Treinos e agenda no painel" description="Seu dashboard mostra apenas os treinos, cursos e eventos que fazem sentido para o seu acompanhamento." />
-            <FlowCard step="03" title="Forum, blog e racas" description="Clientes trocam experiencias no forum. Blog e enciclopedia de racas seguem abertos para consulta." />
+            <FlowCard step="01" title="Conta criada pela K9" description="Nossa equipe cadastra seu acesso, define seu e-mail, uma senha temporária e libera os módulos exatos para o momento do seu cão." />
+            <FlowCard step="02" title="Treinos e agenda no painel" description="Seu dashboard exibe apenas os treinos, cursos e eventos que realmente fazem sentido para o acompanhamento do seu pet. Sem excessos, sem distrações." />
+            <FlowCard step="03" title="Fórum, blog e raças" description="Você vê o progresso em tempo real, registra dúvidas e recebe ajustes no plano sempre que necessário." />
           </div>
         </div>
       </section>
@@ -105,23 +105,23 @@ export default async function Home() {
           <ValueCard
             eyebrow="Clientes"
             title="Dashboard objetivo"
-            description="Cada cliente acompanha apenas o que a equipe liberou: treinos, agenda, materiais e progresso."
+            description="Cada cliente acompanha apenas o que a equipe liberou: treinos, agenda, materiais e progresso do seu cão."
             href={isLoggedIn ? "/dashboard" : "/login"}
             cta={isLoggedIn ? "Abrir meu painel" : "Entrar"}
           />
           <ValueCard
             eyebrow="Conhecimento"
             title="Blog e racas livres"
-            description="Conteudo educativo e enciclopedia de racas continuam acessiveis para qualquer visitante."
+            description="Conteúdo educativo e enciclopédia de raças continuam acessíveis para qualquer visitante."
             href="/blog"
-            cta="Ver conteudos"
+            cta="Ver conteúdos"
           />
           <ValueCard
             eyebrow="Comunidade"
             title="Forum para clientes logados"
-            description="Um espaco seguro para trocar experiencias, tirar duvidas e manter o ritmo do acompanhamento."
+            description="Um espaço seguro para trocar experiências, tirar dúvidas e manter o ritmo do acompanhamento."
             href={isLoggedIn ? "/forum" : "/login"}
-            cta={isLoggedIn ? "Abrir forum" : "Entrar para acessar"}
+            cta={isLoggedIn ? "Abrir fórum" : "Entrar para acessar"}
           />
         </div>
       </section>
@@ -131,7 +131,7 @@ export default async function Home() {
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="text-sm uppercase tracking-[0.2em] text-cyan-200/80">Blog em destaque</p>
-              <h2 className="mt-2 text-3xl font-semibold">Leituras para continuar perto da rotina do seu cao</h2>
+              <h2 className="mt-2 text-3xl font-semibold">Leituras para continuar perto da rotina do seu cão</h2>
             </div>
             <Link href="/blog" className="text-sm text-cyan-300 hover:underline underline-offset-4">
               Ver todos os posts
